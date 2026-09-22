@@ -16,8 +16,7 @@ const DEFAULT_USERS = [
     password: 'Admin@123',
     role: 'admin', // 'admin' | 'user'
     status: 'active', // 'active' | 'suspended'
-    currency: 'USD',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
+    currency: 'INR',
     createdAt: new Date(Date.now() - 60 * 24 * 3600 * 1000).toISOString(),
     lastLogin: new Date().toISOString(),
     bio: 'Platform Root Administrator'
@@ -29,8 +28,7 @@ const DEFAULT_USERS = [
     password: 'Demo@123',
     role: 'user',
     status: 'active',
-    currency: 'USD',
-    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80',
+    currency: 'INR',
     createdAt: new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString(),
     lastLogin: new Date().toISOString(),
     bio: 'Tech Lead & Financial Enthusiast'
@@ -42,8 +40,7 @@ const DEFAULT_USERS = [
     password: 'User@123',
     role: 'user',
     status: 'active',
-    currency: 'EUR',
-    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80',
+    currency: 'INR',
     createdAt: new Date(Date.now() - 14 * 24 * 3600 * 1000).toISOString(),
     lastLogin: new Date(Date.now() - 2 * 24 * 3600 * 1000).toISOString(),
     bio: 'Freelance Designer & Content Creator'
@@ -55,8 +52,7 @@ const DEFAULT_USERS = [
     password: 'User@123',
     role: 'user',
     status: 'active',
-    currency: 'GBP',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80',
+    currency: 'INR',
     createdAt: new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString(),
     lastLogin: new Date(Date.now() - 1 * 24 * 3600 * 1000).toISOString(),
     bio: 'Small Business Founder & Consultant'
@@ -179,7 +175,7 @@ class AuthService {
   }
 
   // Sign up new user
-  signup({ name, email, password, role = 'user', currency = 'USD', startingBalance = 0 }) {
+  signup({ name, email, password, role = 'user', currency = 'INR', startingBalance = 0 }) {
     const cleanEmail = email.trim().toLowerCase();
     const cleanName = name.trim();
 
@@ -207,8 +203,7 @@ class AuthService {
       password: password, // In production this would be hashed on backend; vanilla client simulation
       role: role === 'admin' ? 'admin' : 'user',
       status: 'active',
-      currency: currency || 'USD',
-      avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(cleanName)}`,
+      currency: currency || 'INR',
       createdAt: new Date().toISOString(),
       lastLogin: new Date().toISOString(),
       bio: 'New VaultExpense Member'
@@ -355,8 +350,7 @@ class AuthService {
       password: userData.password || 'Vault@123',
       role: userData.role || 'user',
       status: 'active',
-      currency: userData.currency || 'USD',
-      avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(userData.name)}`,
+      currency: userData.currency || 'INR',
       createdAt: new Date().toISOString(),
       lastLogin: null,
       bio: userData.bio || 'Added by Administrator'

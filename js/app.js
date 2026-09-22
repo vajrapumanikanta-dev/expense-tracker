@@ -88,8 +88,14 @@ class App {
     const dropRoleSwitchText = document.getElementById('dropRoleSwitchText');
 
     if (user) {
-      const avatarUrl = user.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(user.name)}`;
-      if (avatarEl) avatarEl.src = avatarUrl;
+      const initials = (user.name || 'User')
+        .split(' ')
+        .filter(Boolean)
+        .map(n => n[0])
+        .join('')
+        .substring(0, 2)
+        .toUpperCase();
+      if (avatarEl) avatarEl.textContent = initials;
       if (nameEl) nameEl.textContent = user.name;
       if (roleEl) roleEl.textContent = user.role.toUpperCase();
       if (dropNameEl) dropNameEl.textContent = user.name;
@@ -251,7 +257,7 @@ class App {
     // Currency Selector
     const currSelect = document.getElementById('currencySelect');
     if (currSelect) {
-      currSelect.value = store.getState().preferences.currency || 'USD';
+      currSelect.value = store.getState().preferences.currency || 'INR';
       currSelect.addEventListener('change', (e) => {
         store.setPreference('currency', e.target.value);
         audio.playClick();

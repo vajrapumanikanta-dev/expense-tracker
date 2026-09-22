@@ -46,7 +46,7 @@ export function generateId(prefix = 'id') {
 }
 
 // Generate realistic initial seed data for demo accounts
-function generateSeedData(currency = 'USD') {
+function generateSeedData(currency = 'INR') {
   const today = new Date();
   const year = today.getFullYear();
   const month = today.getMonth();
@@ -59,59 +59,59 @@ function generateSeedData(currency = 'USD') {
   const accounts = [
     {
       id: 'acc_checking',
-      name: 'Main Checking (Chase)',
+      name: 'Main Salary Account (HDFC)',
       type: 'checking',
-      balance: 4850.50,
+      balance: 45850.50,
       currency: currency,
       color: '#3B82F6',
       icon: 'landmark',
       accountNumber: '•••• 4821',
-      institution: 'Chase Bank'
+      institution: 'HDFC Bank'
     },
     {
       id: 'acc_savings',
-      name: 'High-Yield Savings (Marcus)',
+      name: 'High-Yield Savings (SBI)',
       type: 'savings',
-      balance: 14200.00,
+      balance: 184200.00,
       currency: currency,
       color: '#10B981',
       icon: 'piggy-bank',
       accountNumber: '•••• 9104',
-      institution: 'Marcus by Goldman'
+      institution: 'State Bank of India'
     },
     {
       id: 'acc_credit',
-      name: 'Sapphire Preferred Credit Card',
+      name: 'Sapphiro Premium Credit Card',
       type: 'credit',
-      balance: -780.40, // amount owed
-      limit: 8000.00,
+      balance: -14780.40, // amount owed
+      limit: 150000.00,
       currency: currency,
       color: '#F43F5E',
       icon: 'credit-card',
       accountNumber: '•••• 6032',
-      institution: 'Chase'
+      institution: 'ICICI Bank'
     },
     {
       id: 'acc_cash',
       name: 'Cash Wallet',
       type: 'cash',
-      balance: 240.00,
+      balance: 3450.00,
       currency: currency,
       color: '#F59E0B',
       icon: 'wallet',
       accountNumber: 'Cash',
-      institution: 'Physical'
+      institution: 'Physical Wallet'
     },
     {
       id: 'acc_crypto',
-      name: 'Crypto & Assets (Coinbase)',
+      name: 'Zerodha Mutual Funds & Stocks',
       type: 'investment',
-      balance: 3650.00,
+      balance: 86500.00,
       currency: currency,
       color: '#8B5CF6',
       icon: 'coins',
-      accountNumber: 'Crypto Portfolio',
-      institution: 'Coinbase'
+      accountNumber: 'Demat Portfolio',
+      institution: 'Zerodha Broking'
     }
   ];
 
@@ -120,12 +120,12 @@ function generateSeedData(currency = 'USD') {
       id: generateId('tx'),
       date: getDateStr(0),
       description: 'Supermarket Grocery Run',
-      amount: 84.50,
+      amount: 3850.00,
       type: 'expense',
       categoryId: 'cat_groceries',
       accountId: 'acc_checking',
-      merchant: 'Whole Foods Market',
-      notes: 'Weekly pantry restocking & fresh produce',
+      merchant: 'Reliance Smart Supermarket',
+      notes: 'Weekly pantry restocking & fresh organic produce',
       tags: ['groceries', 'household'],
       receiptUrl: null
     },
@@ -133,12 +133,12 @@ function generateSeedData(currency = 'USD') {
       id: generateId('tx'),
       date: getDateStr(1),
       description: 'Monthly Tech Salary',
-      amount: 4600.00,
+      amount: 68500.00,
       type: 'income',
       categoryId: 'cat_salary',
       accountId: 'acc_checking',
-      merchant: 'TechCorp Global Inc.',
-      notes: 'Bi-weekly direct deposit salary',
+      merchant: 'TechCorp India Pvt Ltd',
+      notes: 'Monthly direct deposit salary credit',
       tags: ['salary', 'direct-deposit'],
       receiptUrl: null
     },
@@ -146,12 +146,12 @@ function generateSeedData(currency = 'USD') {
       id: generateId('tx'),
       date: getDateStr(2),
       description: 'Dinner with Colleagues',
-      amount: 62.80,
+      amount: 1650.00,
       type: 'expense',
       categoryId: 'cat_food',
       accountId: 'acc_credit',
-      merchant: 'Osteria Italian Grill',
-      notes: 'Friday team meal',
+      merchant: 'Barbeque Nation Grill',
+      notes: 'Friday team dinner & buffet',
       tags: ['dining', 'social'],
       receiptUrl: null
     },
@@ -159,25 +159,25 @@ function generateSeedData(currency = 'USD') {
       id: generateId('tx'),
       date: getDateStr(3),
       description: 'Apartment Monthly Rent',
-      amount: 1450.00,
+      amount: 18000.00,
       type: 'expense',
       categoryId: 'cat_housing',
       accountId: 'acc_checking',
       merchant: 'Skyline Luxury Residences',
-      notes: 'Monthly rent transfer',
+      notes: 'Monthly apartment rent transfer',
       tags: ['rent', 'fixed'],
       receiptUrl: null
     },
     {
       id: generateId('tx'),
       date: getDateStr(4),
-      description: 'EV Charging & Highway Tolls',
-      amount: 38.50,
+      description: 'Full Tank Petrol & Fastag Tolls',
+      amount: 2400.00,
       type: 'expense',
       categoryId: 'cat_transport',
       accountId: 'acc_credit',
-      merchant: 'Tesla Supercharger',
-      notes: 'Fast charge & toll pass',
+      merchant: 'Indian Oil & Fastag Highway',
+      notes: 'Fuel refill & expressway toll pass',
       tags: ['transport', 'commute'],
       receiptUrl: null
     },
@@ -185,50 +185,50 @@ function generateSeedData(currency = 'USD') {
       id: generateId('tx'),
       date: getDateStr(5),
       description: 'Cloud Infrastructure Consulting',
-      amount: 850.00,
+      amount: 24500.00,
       type: 'income',
       categoryId: 'cat_freelance',
       accountId: 'acc_checking',
-      merchant: 'Fintech Startup Ltd',
-      notes: 'API architecture milestone',
+      merchant: 'Fintech Startup Bangalore',
+      notes: 'Microservices architecture milestone 2',
       tags: ['freelance', 'consulting'],
       receiptUrl: null
     },
     {
       id: generateId('tx'),
       date: getDateStr(6),
-      description: 'Fiber Internet & 5G Mobile Plan',
-      amount: 95.00,
+      description: 'Fiber Broadband & 5G Mobile Plan',
+      amount: 1499.00,
       type: 'expense',
       categoryId: 'cat_utilities',
       accountId: 'acc_checking',
-      merchant: 'Verizon Fios',
-      notes: 'High-speed fiber & phone bill',
+      merchant: 'Airtel Xstream Fiber',
+      notes: 'High-speed gigabit fiber & postpaid mobile',
       tags: ['utilities', 'internet'],
       receiptUrl: null
     },
     {
       id: generateId('tx'),
       date: getDateStr(7),
-      description: 'Dental Checkup & Cleaning',
-      amount: 130.00,
+      description: 'Routine Health & Dental Checkup',
+      amount: 1850.00,
       type: 'expense',
       categoryId: 'cat_health',
       accountId: 'acc_credit',
-      merchant: 'Apex Dental Care',
-      notes: 'Routine 6-month checkup',
+      merchant: 'Apollo Clinic & Diagnostics',
+      notes: 'Routine 6-month checkup & dental cleaning',
       tags: ['health', 'medical'],
       receiptUrl: null
     },
     {
       id: generateId('tx'),
       date: getDateStr(9),
-      description: 'Mechanical Keyboard & Desk Mat',
-      amount: 149.99,
+      description: 'Mechanical Keyboard & Monitor Arm',
+      amount: 4999.00,
       type: 'expense',
       categoryId: 'cat_shopping',
       accountId: 'acc_credit',
-      merchant: 'Keychron Online',
+      merchant: 'Keychron India Online',
       notes: 'Home office ergonomic setup',
       tags: ['gadgets', 'work-from-home'],
       receiptUrl: null
@@ -236,13 +236,13 @@ function generateSeedData(currency = 'USD') {
     {
       id: generateId('tx'),
       date: getDateStr(11),
-      description: 'Cinemark IMAX Movie Night',
-      amount: 34.00,
+      description: 'PVR IMAX Movie Night',
+      amount: 1250.00,
       type: 'expense',
       categoryId: 'cat_entertainment',
       accountId: 'acc_credit',
-      merchant: 'Cinemark Theaters',
-      notes: 'Weekend sci-fi screening',
+      merchant: 'PVR Inox Cinemas',
+      notes: 'Weekend sci-fi screening with snacks',
       tags: ['movies', 'fun'],
       receiptUrl: null
     },
@@ -250,38 +250,38 @@ function generateSeedData(currency = 'USD') {
       id: generateId('tx'),
       date: getDateStr(12),
       description: 'Transfer to Emergency Fund',
-      amount: 400.00,
+      amount: 10000.00,
       type: 'transfer',
       categoryId: 'cat_transfer',
       accountId: 'acc_checking',
       toAccountId: 'acc_savings',
-      merchant: 'Internal Transfer',
-      notes: 'Automated savings allocation',
+      merchant: 'Internal Bank Transfer',
+      notes: 'Automated monthly savings allocation',
       tags: ['savings', 'transfer'],
       receiptUrl: null
     },
     {
       id: generateId('tx'),
       date: getDateStr(14),
-      description: 'Coffee & Breakfast Bagel',
-      amount: 12.40,
+      description: 'Filter Coffee & Breakfast',
+      amount: 320.00,
       type: 'expense',
       categoryId: 'cat_food',
       accountId: 'acc_cash',
-      merchant: 'Blue Bottle Coffee',
-      notes: 'Morning coffee meeting',
+      merchant: 'Third Wave Coffee Roasters',
+      notes: 'Morning coffee meeting with mentor',
       tags: ['coffee', 'casual'],
       receiptUrl: null
     },
     {
       id: generateId('tx'),
       date: getDateStr(16),
-      description: 'Quarterly Stock Dividend',
-      amount: 184.20,
+      description: 'Quarterly Mutual Fund Dividend',
+      amount: 3450.00,
       type: 'income',
       categoryId: 'cat_investment',
       accountId: 'acc_savings',
-      merchant: 'Vanguard Index ETF (VOO)',
+      merchant: 'Nifty 50 Index Fund ETF',
       notes: 'Quarterly dividend distribution',
       tags: ['dividends', 'passive'],
       receiptUrl: null
@@ -289,26 +289,26 @@ function generateSeedData(currency = 'USD') {
     {
       id: generateId('tx'),
       date: getDateStr(18),
-      description: 'Full Tank Fuel',
-      amount: 54.00,
+      description: 'Electric & Utility Bill',
+      amount: 1850.00,
       type: 'expense',
-      categoryId: 'cat_transport',
-      accountId: 'acc_credit',
-      merchant: 'Shell Gas Station',
-      notes: 'Road trip refill',
-      tags: ['transport', 'gas'],
+      categoryId: 'cat_utilities',
+      accountId: 'acc_checking',
+      merchant: 'State Electricity Board',
+      notes: 'Monthly power consumption bill',
+      tags: ['utilities', 'electricity'],
       receiptUrl: null
     },
     {
       id: generateId('tx'),
       date: getDateStr(20),
-      description: 'Online Masterclass Subscription',
-      amount: 120.00,
+      description: 'System Design Masterclass',
+      amount: 2499.00,
       type: 'expense',
       categoryId: 'cat_education',
       accountId: 'acc_checking',
-      merchant: 'MasterClass / Coursera',
-      notes: 'System Design Course',
+      merchant: 'Coursera / Scaler Academy',
+      notes: 'Distributed Systems Certification',
       tags: ['education', 'learning'],
       receiptUrl: null
     }
@@ -318,42 +318,42 @@ function generateSeedData(currency = 'USD') {
     {
       id: 'bud_food',
       categoryId: 'cat_food',
-      limit: 350.00,
+      limit: 6500.00,
       period: 'monthly',
       alertThreshold: 85
     },
     {
       id: 'bud_groceries',
       categoryId: 'cat_groceries',
-      limit: 400.00,
+      limit: 8500.00,
       period: 'monthly',
       alertThreshold: 80
     },
     {
       id: 'bud_housing',
       categoryId: 'cat_housing',
-      limit: 1500.00,
+      limit: 22000.00,
       period: 'monthly',
       alertThreshold: 95
     },
     {
       id: 'bud_transport',
       categoryId: 'cat_transport',
-      limit: 220.00,
+      limit: 6000.00,
       period: 'monthly',
       alertThreshold: 80
     },
     {
       id: 'bud_entertainment',
       categoryId: 'cat_entertainment',
-      limit: 150.00,
+      limit: 4000.00,
       period: 'monthly',
       alertThreshold: 75
     },
     {
       id: 'bud_shopping',
       categoryId: 'cat_shopping',
-      limit: 250.00,
+      limit: 8000.00,
       period: 'monthly',
       alertThreshold: 80
     }
@@ -363,7 +363,7 @@ function generateSeedData(currency = 'USD') {
     {
       id: 'rec_netflix',
       name: 'Netflix Premium 4K UHD',
-      amount: 22.99,
+      amount: 649.00,
       categoryId: 'cat_entertainment',
       accountId: 'acc_credit',
       frequency: 'monthly',
@@ -371,12 +371,12 @@ function generateSeedData(currency = 'USD') {
       nextDueDate: `${year}-${String(month + 1).padStart(2, '0')}-15`,
       autoLog: false,
       active: true,
-      provider: 'Netflix Inc.'
+      provider: 'Netflix India'
     },
     {
       id: 'rec_spotify',
-      name: 'Spotify Duo HiFi',
-      amount: 14.99,
+      name: 'Spotify Premium Individual',
+      amount: 119.00,
       categoryId: 'cat_entertainment',
       accountId: 'acc_credit',
       frequency: 'monthly',
@@ -388,8 +388,8 @@ function generateSeedData(currency = 'USD') {
     },
     {
       id: 'rec_internet',
-      name: 'Verizon Fios Gigabit',
-      amount: 79.99,
+      name: 'Airtel Xstream Fiber Gigabit',
+      amount: 999.00,
       categoryId: 'cat_utilities',
       accountId: 'acc_checking',
       frequency: 'monthly',
@@ -397,12 +397,12 @@ function generateSeedData(currency = 'USD') {
       nextDueDate: `${year}-${String(month + 1).padStart(2, '0')}-10`,
       autoLog: false,
       active: true,
-      provider: 'Verizon'
+      provider: 'Airtel'
     },
     {
       id: 'rec_gym',
-      name: 'Equinox Gym Membership',
-      amount: 75.00,
+      name: 'Cult.fit Gym & Fitness Pass',
+      amount: 1500.00,
       categoryId: 'cat_health',
       accountId: 'acc_credit',
       frequency: 'monthly',
@@ -410,7 +410,7 @@ function generateSeedData(currency = 'USD') {
       nextDueDate: `${year}-${String(month + 1).padStart(2, '0')}-05`,
       autoLog: false,
       active: true,
-      provider: 'Equinox'
+      provider: 'Cult.fit'
     }
   ];
 
@@ -418,40 +418,40 @@ function generateSeedData(currency = 'USD') {
     {
       id: 'goal_emergency',
       name: '6-Month Emergency Safety Net',
-      targetAmount: 18000.00,
-      currentAmount: 14200.00,
+      targetAmount: 200000.00,
+      currentAmount: 145000.00,
       targetDate: `${year + 1}-03-31`,
       category: 'Security',
       color: '#10B981',
       icon: 'shield-check',
-      notes: 'Covers essential expenses for 6 months'
+      notes: 'Covers essential living expenses for 6 months'
     },
     {
       id: 'goal_japan_trip',
       name: 'Tokyo & Kyoto Spring Tour',
-      targetAmount: 3500.00,
-      currentAmount: 2150.00,
+      targetAmount: 150000.00,
+      currentAmount: 85000.00,
       targetDate: `${year + 1}-04-15`,
       category: 'Travel',
       color: '#F59E0B',
       icon: 'plane',
-      notes: 'Flight, traditional ryokans & culinary exploration'
+      notes: 'Flight, traditional ryokans & cultural exploration'
     },
     {
       id: 'goal_macbook',
       name: 'MacBook Pro M3 Max Upgrade',
-      targetAmount: 2600.00,
-      currentAmount: 1950.00,
+      targetAmount: 95000.00,
+      currentAmount: 62000.00,
       targetDate: `${year}-11-30`,
       category: 'Tech',
       color: '#6366F1',
       icon: 'laptop',
-      notes: 'Development workstation update'
+      notes: 'High performance development workstation update'
     }
   ];
 
   const preferences = {
-    currency: currency || 'USD',
+    currency: currency || 'INR',
     theme: 'dark',
     soundEnabled: true,
     hapticsEnabled: true,
@@ -481,15 +481,15 @@ class Store {
     // Listen to auth changes to switch user storage automatically
     auth.subscribe((event, data, user) => {
       if (['login_success', 'signup_success'].includes(event) && user) {
-        this.setUserContext(user.id, user.currency);
+        this.setUserContext(user.id, user.currency || 'INR');
       } else if (event === 'logout_success') {
-        this.setUserContext('usr_demo_002', 'USD');
+        this.setUserContext('usr_demo_002', 'INR');
       }
     });
   }
 
   // Switch active user data bucket
-  setUserContext(userId, currency = 'USD') {
+  setUserContext(userId, currency = 'INR') {
     this.currentUserId = userId;
     this.state = this.loadState(userId, currency);
     this.notify('user_context_switched', { userId });
@@ -499,7 +499,7 @@ class Store {
     return `${STORAGE_PREFIX}${userId}`;
   }
 
-  loadState(userId = this.currentUserId, preferredCurrency = 'USD') {
+  loadState(userId = this.currentUserId, preferredCurrency = 'INR') {
     const key = this.getStorageKey(userId);
     try {
       const data = localStorage.getItem(key);
@@ -749,10 +749,10 @@ class Store {
   }
 
   // Currency formatting helper
-  formatCurrency(amount, currencyCode = this.state.preferences.currency) {
-    const curr = CURRENCIES[currencyCode] || CURRENCIES.USD;
+  formatCurrency(amount, currencyCode = this.state?.preferences?.currency || 'INR') {
+    const curr = CURRENCIES[currencyCode] || CURRENCIES.INR;
     const num = Number(amount) || 0;
-    return `${curr.symbol}${num.toLocaleString(curr.locale, {
+    return `${curr.symbol}${num.toLocaleString(curr.locale || 'en-IN', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     })}`;
@@ -1045,7 +1045,7 @@ class Store {
   }
 
   resetToDemoData() {
-    this.state = generateSeedData(this.state.preferences.currency || 'USD');
+    this.state = generateSeedData(this.state?.preferences?.currency || 'INR');
     this.saveState();
     this.notify('data_reset', this.state);
     this.addAuditLog('RESET_DEMO_DATA', 'Demo ledger restored to initial state', auth.getCurrentUser()?.name, 'INFO');

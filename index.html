@@ -157,10 +157,10 @@
           <!-- Currency Switcher -->
           <div class="flex items-center gap-1.5">
             <select class="form-select text-xs py-1.5 px-2.5 rounded-lg font-medium" id="currencySelect" title="Select Currency">
+              <option value="INR" selected>INR (₹)</option>
               <option value="USD">USD ($)</option>
               <option value="EUR">EUR (€)</option>
               <option value="GBP">GBP (£)</option>
-              <option value="INR">INR (₹)</option>
               <option value="JPY">JPY (¥)</option>
               <option value="CAD">CAD (C$)</option>
               <option value="AUD">AUD (A$)</option>
@@ -192,7 +192,7 @@
           <!-- User Profile & Auth Dropdown Container -->
           <div class="relative" id="userProfileContainer">
             <button class="flex items-center gap-2 p-1.5 rounded-xl hover:bg-surface-elevated transition border border-transparent hover:border-border" id="userProfileBtn">
-              <img id="headerUserAvatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100" alt="Avatar" class="w-8 h-8 rounded-full border border-border object-cover">
+              <div id="headerUserAvatar" class="w-8 h-8 rounded-full bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center font-bold text-xs">AM</div>
               <div class="hidden md:block text-left">
                 <div class="text-xs font-bold text-foreground leading-tight" id="headerUserName">Alex Morgan</div>
                 <div class="text-[10px] text-muted font-mono" id="headerUserRole">USER</div>
@@ -1211,10 +1211,10 @@
           <div class="form-group mb-0">
             <label class="form-label" for="signupCurrency">Currency</label>
             <select class="form-select" id="signupCurrency">
+              <option value="INR" selected>INR (₹)</option>
               <option value="USD">USD ($)</option>
               <option value="EUR">EUR (€)</option>
               <option value="GBP">GBP (£)</option>
-              <option value="INR">INR (₹)</option>
               <option value="JPY">JPY (¥)</option>
             </select>
           </div>
@@ -1263,10 +1263,10 @@
             <div class="form-group mb-0">
               <label class="form-label" for="admNewCurrency">Default Currency</label>
               <select class="form-select" id="admNewCurrency">
+                <option value="INR" selected>INR (₹)</option>
                 <option value="USD">USD ($)</option>
                 <option value="EUR">EUR (€)</option>
                 <option value="GBP">GBP (£)</option>
-                <option value="INR">INR (₹)</option>
               </select>
             </div>
           </div>
@@ -1771,16 +1771,16 @@
           <div class="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Or test sample receipt:</div>
           <div class="grid grid-cols-3 gap-2">
             <button type="button" class="p-2.5 rounded-xl bg-surface-elevated border border-border text-left hover:border-indigo-500 transition" onclick="window.receiptScanner.loadSample(0)">
-              <div class="text-xs font-bold text-foreground">Trader Joe's</div>
-              <div class="text-[10px] text-muted">$54.75 • Groceries</div>
+              <div class="text-xs font-bold text-foreground">Reliance Smart</div>
+              <div class="text-[10px] text-muted">₹1,850.00 • Groceries</div>
             </button>
             <button type="button" class="p-2.5 rounded-xl bg-surface-elevated border border-border text-left hover:border-indigo-500 transition" onclick="window.receiptScanner.loadSample(1)">
-              <div class="text-xs font-bold text-foreground">Apple Store</div>
-              <div class="text-[10px] text-muted">$179.00 • Gadgets</div>
+              <div class="text-xs font-bold text-foreground">Croma Digital</div>
+              <div class="text-[10px] text-muted">₹4,999.00 • Gadgets</div>
             </button>
             <button type="button" class="p-2.5 rounded-xl bg-surface-elevated border border-border text-left hover:border-indigo-500 transition" onclick="window.receiptScanner.loadSample(2)">
-              <div class="text-xs font-bold text-foreground">Chipotle Grill</div>
-              <div class="text-[10px] text-muted">$23.40 • Dining</div>
+              <div class="text-xs font-bold text-foreground">Barbeque Nation</div>
+              <div class="text-[10px] text-muted">₹1,450.00 • Dining</div>
             </button>
           </div>
         </div>

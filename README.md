@@ -82,7 +82,7 @@ For demonstration and grading evaluation, the platform comes pre-seeded with two
 ## 🚀 4. Key Module Features
 
 ### 4.1 🛡️ Admin Module
-1. **Platform Telemetry & KPIs**: Real-time aggregated stats for Total Users, Active vs Suspended accounts, Total Platform Volume ($), Total Inflows, and Outflows.
+1. **Platform Telemetry & KPIs**: Real-time aggregated stats for Total Users, Active vs Suspended accounts, Total Platform Volume (₹), Total Inflows, and Outflows.
 2. **User Management Console**: Searchable user table with full CRUD capabilities:
    - Suspend / Reactivate accounts in 1-click.
    - Promote users to Admin or demote to standard User.

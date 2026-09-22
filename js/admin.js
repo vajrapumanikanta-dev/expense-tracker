@@ -87,7 +87,7 @@ class AdminManager {
       if (this.platformChart) this.platformChart.destroy();
 
       const months = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'];
-      const volumeData = [12400, 18200, 24600, 31000, 42500, Math.round(analytics.totalVolume)];
+      const volumeData = [125000, 185000, 245000, 310000, 425000, Math.round(analytics.totalVolume || 480000)];
       const activeUserData = [2, 3, 3, 4, 4, analytics.totalUsers];
 
       this.platformChart = new window.Chart(lineCtx, {
@@ -96,7 +96,7 @@ class AdminManager {
           labels: months,
           datasets: [
             {
-              label: 'Platform Transaction Volume ($)',
+              label: 'Platform Transaction Volume (₹)',
               data: volumeData,
               borderColor: '#6366F1',
               backgroundColor: 'rgba(99, 102, 241, 0.12)',
@@ -231,11 +231,19 @@ class AdminManager {
         else if (user.email === 'demo@vault.io') txCount = 15;
       } catch (e) {}
 
+      const initials = (user.name || 'User')
+        .split(' ')
+        .filter(Boolean)
+        .map(n => n[0])
+        .join('')
+        .substring(0, 2)
+        .toUpperCase();
+
       return `
         <tr class="border-b border-border/40 hover:bg-surface-elevated/40 transition">
           <td class="py-3 px-4">
             <div class="flex items-center gap-3">
-              <img src="${user.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(user.name)}`}" alt="${user.name}" class="w-9 h-9 rounded-full bg-surface-elevated border border-border object-cover">
+              <div class="w-9 h-9 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center font-bold text-xs flex-shrink-0">${initials}</div>
               <div>
                 <div class="font-bold text-foreground text-sm flex items-center gap-1.5">
                   ${user.name}

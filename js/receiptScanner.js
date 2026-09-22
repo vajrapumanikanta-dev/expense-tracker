@@ -15,28 +15,28 @@ class ReceiptScanner {
   getSampleReceipts() {
     return [
       {
-        merchant: 'Trader Joe’s Market',
-        amount: 54.75,
+        merchant: 'Reliance Smart Supermarket',
+        amount: 1850.00,
         date: new Date().toISOString().split('T')[0],
         categoryId: 'cat_groceries',
-        notes: 'Organic groceries, fruits & bakery items',
+        notes: 'Monthly pantry restocking, grains & dairy',
         tags: ['groceries', 'receipt-scan']
       },
       {
-        merchant: 'Apple Store Regent St',
-        amount: 179.00,
+        merchant: 'Croma Digital Electronics',
+        amount: 4999.00,
         date: new Date().toISOString().split('T')[0],
         categoryId: 'cat_shopping',
-        notes: 'AirPods Pro replacement & MagSafe adapter',
-        tags: ['gadgets', 'apple']
+        notes: 'Wireless ANC headphones & charging station',
+        tags: ['gadgets', 'electronics']
       },
       {
-        merchant: 'Chipotle Mexican Grill',
-        amount: 23.40,
+        merchant: 'Barbeque Nation Grill',
+        amount: 1450.00,
         date: new Date().toISOString().split('T')[0],
         categoryId: 'cat_food',
-        notes: 'Burrito bowls & guacamole with drinks',
-        tags: ['dining', 'fast-casual']
+        notes: 'Buffet lunch with team members',
+        tags: ['dining', 'team-meal']
       }
     ];
   }
