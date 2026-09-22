@@ -1,0 +1,1802 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VaultExpense - Personal & Small Business Expense Tracker (SDC Project)</title>
+  <meta name="description" content="State-of-the-art expense tracker with Admin and User modules, LocalStorage authentication, multi-account manager, budget alerts, interactive financial charts, and savings goals.">
+  
+  <!-- CSS Stylesheet -->
+  <link rel="stylesheet" href="css/styles.css">
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- ==================== SIDEBAR ==================== -->
+    <aside class="app-sidebar" id="appSidebar">
+      <div class="sidebar-brand">
+        <div class="brand-icon">
+          <i data-lucide="shield-check" class="w-6 h-6"></i>
+        </div>
+        <div class="flex-1">
+          <div class="flex items-center justify-between">
+            <span class="brand-name">VaultExpense</span>
+            <span class="badge badge-primary text-[9px] font-bold uppercase" id="sidebarRoleBadge">User</span>
+          </div>
+          <span class="text-[10px] text-indigo-400 block font-mono font-medium -mt-0.5">FINANCIAL OS • SDC</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        
+        <!-- ADMIN MODULE SECTION (Visible to Admin or when in Admin Mode) -->
+        <div class="admin-nav-group" id="adminNavSection">
+          <div class="nav-section-title text-indigo-400 flex items-center justify-between">
+            <span>🛡️ Admin Module</span>
+            <span class="badge badge-primary text-[9px] py-0 px-1 font-bold">RBAC</span>
+          </div>
+
+          <a class="nav-item" data-view="admin-dashboard" id="nav-admin-dashboard">
+            <i data-lucide="activity"></i>
+            <span>Admin Overview</span>
+          </a>
+
+          <a class="nav-item" data-view="admin-users" id="nav-admin-users">
+            <i data-lucide="users"></i>
+            <span>User Management</span>
+          </a>
+
+          <a class="nav-item" data-view="admin-categories" id="nav-admin-categories">
+            <i data-lucide="tags"></i>
+            <span>Global Categories</span>
+          </a>
+
+          <a class="nav-item" data-view="admin-analytics" id="nav-admin-analytics">
+            <i data-lucide="bar-chart-3"></i>
+            <span>Platform Analytics</span>
+          </a>
+
+          <a class="nav-item" data-view="admin-logs" id="nav-admin-logs">
+            <i data-lucide="shield-alert"></i>
+            <span>Security & Audit Logs</span>
+          </a>
+        </div>
+
+        <!-- USER MODULE SECTION -->
+        <div class="user-nav-group" id="userNavSection">
+          <div class="nav-section-title flex items-center justify-between">
+            <span>👤 User Module</span>
+            <span class="text-[10px] text-muted">Core Finance</span>
+          </div>
+          
+          <a class="nav-item active" data-view="dashboard" id="nav-dashboard">
+            <i data-lucide="layout-dashboard"></i>
+            <span>Dashboard</span>
+          </a>
+
+          <a class="nav-item" data-view="transactions" id="nav-transactions">
+            <i data-lucide="receipt"></i>
+            <span>Transactions Ledger</span>
+          </a>
+
+          <a class="nav-item" data-view="budgets" id="nav-budgets">
+            <i data-lucide="pie-chart"></i>
+            <span>Budgets & Alerts</span>
+          </a>
+
+          <a class="nav-item" data-view="analytics" id="nav-analytics">
+            <i data-lucide="line-chart"></i>
+            <span>Financial Analytics</span>
+          </a>
+
+          <div class="nav-section-title">Portfolio & Planning</div>
+
+          <a class="nav-item" data-view="accounts" id="nav-accounts">
+            <i data-lucide="landmark"></i>
+            <span>Accounts & Net Worth</span>
+          </a>
+
+          <a class="nav-item" data-view="recurring" id="nav-recurring">
+            <i data-lucide="repeat"></i>
+            <span>Recurring Bills</span>
+          </a>
+
+          <a class="nav-item" data-view="goals" id="nav-goals">
+            <i data-lucide="target"></i>
+            <span>Savings Goals</span>
+          </a>
+
+          <div class="nav-section-title">System & Utilities</div>
+
+          <a class="nav-item" data-view="settings" id="nav-settings">
+            <i data-lucide="settings"></i>
+            <span>Export & Backup</span>
+          </a>
+        </div>
+
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="p-3 rounded-xl bg-surface-elevated border border-border/40 flex items-center justify-between cursor-pointer hover:border-indigo-500/40 transition" onclick="window.app.openVivaModal()">
+          <div class="flex items-center gap-2.5">
+            <span class="text-xl">🎓</span>
+            <div>
+              <div class="text-xs font-bold text-foreground">SDC Project Pack</div>
+              <div class="text-[10px] text-indigo-400 font-medium">Viva & Review Guide</div>
+            </div>
+          </div>
+          <span class="badge badge-indigo text-xs font-bold">Q&A</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ==================== MAIN CONTENT ==================== -->
+    <main class="app-main">
+      
+      <!-- Top Navigation Header -->
+      <header class="app-header">
+        <div class="header-left">
+          <button class="icon-btn lg:hidden" id="mobileSidebarToggle" aria-label="Toggle Navigation">
+            <i data-lucide="menu" class="w-5 h-5"></i>
+          </button>
+          
+          <div class="header-title-block">
+            <h2 id="headerTitle">Dashboard Overview</h2>
+            <p id="headerSubtitle">Real-time wealth tracking & spending velocity</p>
+          </div>
+        </div>
+
+        <div class="header-right">
+          <!-- Currency Switcher -->
+          <div class="flex items-center gap-1.5">
+            <select class="form-select text-xs py-1.5 px-2.5 rounded-lg font-medium" id="currencySelect" title="Select Currency">
+              <option value="USD">USD ($)</option>
+              <option value="EUR">EUR (€)</option>
+              <option value="GBP">GBP (£)</option>
+              <option value="INR">INR (₹)</option>
+              <option value="JPY">JPY (¥)</option>
+              <option value="CAD">CAD (C$)</option>
+              <option value="AUD">AUD (A$)</option>
+            </select>
+          </div>
+
+          <!-- Sound Effects Toggle -->
+          <button class="icon-btn" id="soundToggleBtn" title="Toggle Sound Feedback">
+            <i data-lucide="volume-2" class="w-4 h-4"></i>
+          </button>
+
+          <!-- Theme Toggle (Dark / Light) -->
+          <button class="icon-btn" id="themeToggleBtn" title="Toggle Dark/Light Mode">
+            <i data-lucide="sun" class="w-4 h-4"></i>
+          </button>
+
+          <!-- Receipt OCR Scanner Button -->
+          <button class="btn btn-secondary btn-sm" id="openScannerBtn">
+            <i data-lucide="scan-line" class="w-4 h-4"></i>
+            <span class="hidden sm:inline">Receipt Scan</span>
+          </button>
+
+          <!-- Quick Add Transaction Button -->
+          <button class="btn btn-primary btn-sm" id="quickAddTxBtn">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span>Add Tx</span>
+          </button>
+
+          <!-- User Profile & Auth Dropdown Container -->
+          <div class="relative" id="userProfileContainer">
+            <button class="flex items-center gap-2 p-1.5 rounded-xl hover:bg-surface-elevated transition border border-transparent hover:border-border" id="userProfileBtn">
+              <img id="headerUserAvatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100" alt="Avatar" class="w-8 h-8 rounded-full border border-border object-cover">
+              <div class="hidden md:block text-left">
+                <div class="text-xs font-bold text-foreground leading-tight" id="headerUserName">Alex Morgan</div>
+                <div class="text-[10px] text-muted font-mono" id="headerUserRole">USER</div>
+              </div>
+              <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-muted hidden md:block"></i>
+            </button>
+
+            <!-- Dropdown Menu -->
+            <div class="user-dropdown-menu hidden" id="userDropdownMenu">
+              <div class="p-3 border-b border-border/40">
+                <div class="text-xs font-bold text-foreground" id="dropUserName">Alex Morgan</div>
+                <div class="text-[11px] text-muted font-mono" id="dropUserEmail">demo@vault.io</div>
+                <div class="mt-1.5 flex items-center gap-1.5">
+                  <span class="badge badge-primary text-[10px] font-bold uppercase" id="dropUserBadge">User Account</span>
+                </div>
+              </div>
+              
+              <div class="p-1.5">
+                <button class="w-full text-left px-3 py-2 text-xs rounded-lg hover:bg-surface-elevated flex items-center gap-2 transition text-foreground" onclick="window.app.toggleAdminUserSwitch()">
+                  <i data-lucide="shield-check" class="w-4 h-4 text-indigo-400"></i>
+                  <span id="dropRoleSwitchText">Switch to Admin Portal</span>
+                </button>
+
+                <button class="w-full text-left px-3 py-2 text-xs rounded-lg hover:bg-surface-elevated flex items-center gap-2 transition text-foreground" onclick="window.app.openVivaModal()">
+                  <i data-lucide="book-open" class="w-4 h-4 text-amber-400"></i>
+                  <span>SDC Project Defense Pack</span>
+                </button>
+
+                <button class="w-full text-left px-3 py-2 text-xs rounded-lg hover:bg-surface-elevated flex items-center gap-2 transition text-foreground" onclick="window.app.openAuthModal()">
+                  <i data-lucide="user-plus" class="w-4 h-4 text-emerald-400"></i>
+                  <span>Switch / Register Account</span>
+                </button>
+              </div>
+
+              <div class="p-1.5 border-t border-border/40">
+                <button class="w-full text-left px-3 py-2 text-xs rounded-lg hover:bg-rose-500/10 text-rose-400 flex items-center gap-2 transition font-semibold" onclick="window.app.handleLogout()">
+                  <i data-lucide="log-out" class="w-4 h-4"></i>
+                  <span>Sign Out</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </header>
+
+      <!-- View Containers -->
+      <div class="view-content">
+
+        <!-- ==================== ADMIN VIEW 1: ADMIN DASHBOARD ==================== -->
+        <section class="view-panel" id="view-admin-dashboard">
+          
+          <!-- Banner -->
+          <div class="p-5 rounded-2xl bg-gradient-to-r from-indigo-950/60 via-purple-950/40 to-surface-elevated border border-indigo-500/30 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="badge badge-primary text-xs font-bold uppercase">Administrator Portal</span>
+                <span class="badge badge-emerald text-xs font-semibold">● System Online</span>
+              </div>
+              <h3 class="text-xl font-bold text-foreground mt-1.5">Platform Governance & Global Financial Overview</h3>
+              <p class="text-xs text-muted mt-0.5">Manage platform accounts, global taxonomy, monitor transaction velocity, and inspect audit logs.</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button class="btn btn-secondary btn-sm" onclick="window.admin.downloadPlatformBackup()">
+                <i data-lucide="download-cloud" class="w-4 h-4"></i> Platform Backup
+              </button>
+              <button class="btn btn-primary btn-sm" onclick="window.app.openAdminUserModal()">
+                <i data-lucide="user-plus" class="w-4 h-4"></i> Add User
+              </button>
+            </div>
+          </div>
+
+          <!-- Top Admin KPI Stat Cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div class="stat-card">
+              <div class="stat-card-icon bg-indigo-500/15 text-indigo-400">
+                <i data-lucide="users" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <div class="text-xs font-medium text-muted">Total Registered Users</div>
+                <div class="text-xl font-bold text-foreground mt-0.5" id="adminKpiTotalUsers">4</div>
+                <div class="text-xs text-emerald-400 font-medium mt-1" id="adminKpiActiveUsers">4 Active (0 Suspended)</div>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-card-icon bg-emerald-500/15 text-emerald-400">
+                <i data-lucide="arrow-down-left" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <div class="text-xs font-medium text-muted">Platform Total Inflow</div>
+                <div class="text-xl font-bold text-emerald-400 mt-0.5" id="adminKpiInflow">+$0.00</div>
+                <div class="text-xs text-muted mt-1">Aggregated deposits</div>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-card-icon bg-rose-500/15 text-rose-400">
+                <i data-lucide="arrow-up-right" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <div class="text-xs font-medium text-muted">Platform Total Outflow</div>
+                <div class="text-xl font-bold text-rose-400 mt-0.5" id="adminKpiOutflow">-$0.00</div>
+                <div class="text-xs text-muted mt-1">Categorized spending</div>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-card-icon bg-amber-500/15 text-amber-400">
+                <i data-lucide="database" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <div class="text-xs font-medium text-muted">Platform Total Volume</div>
+                <div class="text-xl font-bold text-amber-400 mt-0.5" id="adminKpiTotalVolume">$0.00</div>
+                <div class="text-xs text-indigo-400 font-medium mt-1"><span id="adminKpiTotalTx">0</span> total records</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Middle Admin Charts Grid -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            
+            <!-- Platform Volume Dynamics (2 cols) -->
+            <div class="card p-5 lg:col-span-2">
+              <div class="flex items-center justify-between mb-4">
+                <div>
+                  <h3 class="text-base font-bold text-foreground">Platform Volume & Account Growth</h3>
+                  <p class="text-xs text-muted">Monthly aggregated transaction flow and registered user trajectory</p>
+                </div>
+                <span class="badge badge-primary text-xs">Platform Telemetry</span>
+              </div>
+              <div class="h-64">
+                <canvas id="adminPlatformChartCanvas"></canvas>
+              </div>
+            </div>
+
+            <!-- Global Category Spend Donut (1 col) -->
+            <div class="card p-5 flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-2">
+                  <h3 class="text-base font-bold text-foreground">Global Category Distribution</h3>
+                  <span class="badge badge-secondary text-xs">All Users</span>
+                </div>
+                <p class="text-xs text-muted mb-4">Highest platform-wide spending buckets</p>
+              </div>
+              <div class="h-56 relative flex items-center justify-center">
+                <canvas id="adminCategoryChartCanvas"></canvas>
+              </div>
+              <div class="text-center pt-2">
+                <button class="text-xs text-indigo-400 hover:underline" onclick="window.app.navigate('admin-categories')">Manage Global Categories →</button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Quick Navigation Actions -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="card p-4 hover:border-indigo-500/50 transition cursor-pointer" onclick="window.app.navigate('admin-users')">
+              <div class="flex items-center gap-3">
+                <div class="p-3 rounded-xl bg-indigo-500/10 text-indigo-400">
+                  <i data-lucide="user-check" class="w-5 h-5"></i>
+                </div>
+                <div>
+                  <div class="text-sm font-bold text-foreground">Manage User Accounts</div>
+                  <div class="text-xs text-muted">Suspend, promote, reset passwords</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card p-4 hover:border-emerald-500/50 transition cursor-pointer" onclick="window.app.navigate('admin-logs')">
+              <div class="flex items-center gap-3">
+                <div class="p-3 rounded-xl bg-emerald-500/10 text-emerald-400">
+                  <i data-lucide="shield" class="w-5 h-5"></i>
+                </div>
+                <div>
+                  <div class="text-sm font-bold text-foreground">Security & Audit Trails</div>
+                  <div class="text-xs text-muted">Inspect real-time auth & ledger events</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card p-4 hover:border-amber-500/50 transition cursor-pointer" onclick="window.app.navigate('admin-categories')">
+              <div class="flex items-center gap-3">
+                <div class="p-3 rounded-xl bg-amber-500/10 text-amber-400">
+                  <i data-lucide="layers" class="w-5 h-5"></i>
+                </div>
+                <div>
+                  <div class="text-sm font-bold text-foreground">System Categories</div>
+                  <div class="text-xs text-muted">Add, modify & configure global tags</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- ==================== ADMIN VIEW 2: USER MANAGEMENT ==================== -->
+        <section class="view-panel" id="view-admin-users">
+          <div class="card p-6 mb-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+              <div>
+                <h3 class="text-lg font-bold text-foreground">Platform User Directory</h3>
+                <p class="text-xs text-muted">Full administrative governance of registered users and role permissions</p>
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="window.app.openAdminUserModal()">
+                <i data-lucide="user-plus" class="w-4 h-4"></i> Create New User
+              </button>
+            </div>
+
+            <!-- Filters -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+              <div class="relative">
+                <i data-lucide="search" class="w-4 h-4 text-muted absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+                <input type="text" class="form-input pl-10" id="adminUserSearch" placeholder="Search by name or email..." style="padding-left: 2.5rem;">
+              </div>
+              <div>
+                <select class="form-select" id="adminUserRoleFilter">
+                  <option value="all">All Roles</option>
+                  <option value="admin">Administrators</option>
+                  <option value="user">Standard Users</option>
+                </select>
+              </div>
+              <div>
+                <select class="form-select" id="adminUserStatusFilter">
+                  <option value="all">All Account Statuses</option>
+                  <option value="active">Active Accounts</option>
+                  <option value="suspended">Suspended Accounts</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Table -->
+            <div class="overflow-x-auto rounded-xl border border-border">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="border-b border-border bg-surface-elevated text-xs font-semibold text-muted uppercase tracking-wider">
+                    <th class="py-3 px-4">User Details</th>
+                    <th class="py-3 px-4">Role</th>
+                    <th class="py-3 px-4">Status</th>
+                    <th class="py-3 px-4">Currency</th>
+                    <th class="py-3 px-4">Activity</th>
+                    <th class="py-3 px-4">Timeline</th>
+                    <th class="py-3 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="adminUsersTableBody" class="divide-y divide-border/30 text-sm">
+                  <!-- Injected by admin.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== ADMIN VIEW 3: GLOBAL CATEGORIES ==================== -->
+        <section class="view-panel" id="view-admin-categories">
+          <div class="card p-6 mb-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+              <div>
+                <h3 class="text-lg font-bold text-foreground">Global Categories & Taxonomy</h3>
+                <p class="text-xs text-muted">Configure default spending and income categories accessible to all users</p>
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="window.admin.openAddCategoryModal()">
+                <i data-lucide="plus" class="w-4 h-4"></i> Add Global Category
+              </button>
+            </div>
+
+            <div class="overflow-x-auto rounded-xl border border-border">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="border-b border-border bg-surface-elevated text-xs font-semibold text-muted uppercase tracking-wider">
+                    <th class="py-3 px-4">Category</th>
+                    <th class="py-3 px-4">Unique ID</th>
+                    <th class="py-3 px-4">Type</th>
+                    <th class="py-3 px-4">Color Palette</th>
+                    <th class="py-3 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="adminCategoriesTableBody" class="divide-y divide-border/30 text-sm">
+                  <!-- Injected by admin.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== ADMIN VIEW 4: PLATFORM ANALYTICS ==================== -->
+        <section class="view-panel" id="view-admin-analytics">
+          <div class="card p-6 mb-6">
+            <div class="flex items-center justify-between mb-6">
+              <div>
+                <h3 class="text-lg font-bold text-foreground">System-Wide Financial Analytics</h3>
+                <p class="text-xs text-muted">Aggregated telemetry, liquidity distributions, and macro financial health</p>
+              </div>
+              <button class="btn btn-secondary btn-sm" onclick="window.admin.refreshAll()">
+                <i data-lucide="refresh-cw" class="w-4 h-4"></i> Refresh Data
+              </button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div class="card p-5 bg-surface-elevated/40">
+                <h4 class="text-sm font-bold text-foreground mb-1">Architecture & Data Storage Metrics</h4>
+                <p class="text-xs text-muted mb-4">Vanilla Client-Side LocalStorage Architecture</p>
+                
+                <div class="space-y-3 text-xs">
+                  <div class="flex justify-between py-2 border-b border-border/40">
+                    <span class="text-muted">Storage Engine</span>
+                    <span class="font-mono text-indigo-400 font-bold">HTML5 Web Storage (LocalStorage)</span>
+                  </div>
+                  <div class="flex justify-between py-2 border-b border-border/40">
+                    <span class="text-muted">Multi-User Partitioning</span>
+                    <span class="font-mono text-emerald-400 font-bold">Scoped Keys (vault_expense_user_data_*)</span>
+                  </div>
+                  <div class="flex justify-between py-2 border-b border-border/40">
+                    <span class="text-muted">Authentication Protocol</span>
+                    <span class="font-mono text-amber-400 font-bold">Client RBAC + Session Persistence</span>
+                  </div>
+                  <div class="flex justify-between py-2 border-b border-border/40">
+                    <span class="text-muted">Audit Logging Mode</span>
+                    <span class="font-mono text-foreground font-bold">FIFO Circular Ledger (150 events)</span>
+                  </div>
+                  <div class="flex justify-between py-2">
+                    <span class="text-muted">Export Formats Supported</span>
+                    <span class="font-mono text-foreground font-bold">CSV, JSON, Formatted Print/PDF</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card p-5 bg-surface-elevated/40">
+                <h4 class="text-sm font-bold text-foreground mb-1">Platform Capacity & Reliability</h4>
+                <p class="text-xs text-muted mb-4">Zero backend dependency, 100% offline resilient</p>
+
+                <div class="space-y-4 pt-2">
+                  <div>
+                    <div class="flex justify-between text-xs font-semibold mb-1">
+                      <span>LocalStorage Capacity Used</span>
+                      <span class="text-indigo-400">~12 KB / 5 MB (0.24%)</span>
+                    </div>
+                    <div class="w-full h-2 bg-surface rounded-full overflow-hidden">
+                      <div class="h-full bg-indigo-500 rounded-full" style="width: 12%;"></div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div class="flex justify-between text-xs font-semibold mb-1">
+                      <span>DOM Render Speed</span>
+                      <span class="text-emerald-400">&lt; 16ms (60 FPS Native)</span>
+                    </div>
+                    <div class="w-full h-2 bg-surface rounded-full overflow-hidden">
+                      <div class="h-full bg-emerald-500 rounded-full" style="width: 95%;"></div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div class="flex justify-between text-xs font-semibold mb-1">
+                      <span>Framework Overhead</span>
+                      <span class="text-blue-400">0 KB (Pure Vanilla HTML/CSS/JS)</span>
+                    </div>
+                    <div class="w-full h-2 bg-surface rounded-full overflow-hidden">
+                      <div class="h-full bg-blue-500 rounded-full" style="width: 100%;"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== ADMIN VIEW 5: SECURITY & AUDIT LOGS ==================== -->
+        <section class="view-panel" id="view-admin-logs">
+          <div class="card p-6 mb-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+              <div>
+                <h3 class="text-lg font-bold text-foreground">System Audit Trail & Security Ledger</h3>
+                <p class="text-xs text-muted">Immutable trace of platform logins, user registrations, transactions, and admin operations</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <button class="btn btn-secondary btn-sm" onclick="window.admin.exportAuditLogsCSV()">
+                  <i data-lucide="download" class="w-4 h-4"></i> Export CSV
+                </button>
+                <button class="btn btn-secondary btn-sm text-rose-400 hover:bg-rose-500/10" onclick="window.admin.clearAuditLogs()">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i> Clear Trail
+                </button>
+              </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+              <div class="relative">
+                <i data-lucide="search" class="w-4 h-4 text-muted absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+                <input type="text" class="form-input pl-10" id="adminLogSearch" placeholder="Search by details, user, or action..." style="padding-left: 2.5rem;">
+              </div>
+              <div>
+                <select class="form-select" id="adminLogActionFilter">
+                  <option value="all">All Action Types</option>
+                  <option value="LOGIN">Auth & Logins</option>
+                  <option value="USER">User Account Changes</option>
+                  <option value="TX">Transaction Events</option>
+                  <option value="CATEGORY">Category Taxonomy</option>
+                  <option value="SYSTEM">System Operations</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Table -->
+            <div class="overflow-x-auto rounded-xl border border-border">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="border-b border-border bg-surface-elevated text-xs font-semibold text-muted uppercase tracking-wider">
+                    <th class="py-3 px-4">Timestamp</th>
+                    <th class="py-3 px-4">Action Code</th>
+                    <th class="py-3 px-4">Event Description</th>
+                    <th class="py-3 px-4">Triggered By</th>
+                    <th class="py-3 px-4">Origin IP</th>
+                    <th class="py-3 px-4 text-right">Status</th>
+                  </tr>
+                </thead>
+                <tbody id="adminAuditLogsBody" class="divide-y divide-border/30 text-sm">
+                  <!-- Injected by admin.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ==================== USER VIEW 1: DASHBOARD ==================== -->
+        <section class="view-panel active" id="view-dashboard">
+          
+          <!-- Top KPI Stat Cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div class="stat-card">
+              <div class="stat-card-icon bg-indigo-500/15 text-indigo-400">
+                <i data-lucide="wallet" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <div class="text-xs font-medium text-muted">Total Net Worth</div>
+                <div class="text-xl font-bold text-foreground mt-0.5" id="kpiNetWorth">$0.00</div>
+                <div class="text-xs text-emerald-400 font-medium mt-1">Across all accounts</div>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-card-icon bg-emerald-500/15 text-emerald-400">
+                <i data-lucide="arrow-down-left" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <div class="text-xs font-medium text-muted">Month Inflow (Income)</div>
+                <div class="text-xl font-bold text-emerald-400 mt-0.5" id="kpiMonthIncome">+$0.00</div>
+                <div class="text-xs text-muted mt-1">Salary & Freelance</div>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-card-icon bg-rose-500/15 text-rose-400">
+                <i data-lucide="arrow-up-right" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <div class="text-xs font-medium text-muted">Month Outflow (Spend)</div>
+                <div class="text-xl font-bold text-rose-400 mt-0.5" id="kpiMonthExpenses">-$0.00</div>
+                <div class="text-xs text-muted mt-1">Categorized expenses</div>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-card-icon bg-blue-500/15 text-blue-400">
+                <i data-lucide="piggy-bank" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <div class="text-xs font-medium text-muted">Net Savings Rate</div>
+                <div class="text-xl font-bold text-blue-400 mt-0.5" id="kpiSavingsRate">0%</div>
+                <div class="text-xs text-emerald-400 font-medium mt-1" id="kpiNetSavings">+$0.00 saved</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Upcoming Bill Reminder Banner -->
+          <div id="dashboardRecurringBanner" class="mb-6 hidden"></div>
+
+          <!-- Middle Charts Grid -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            
+            <!-- Cashflow Trends (2 cols) -->
+            <div class="card p-5 lg:col-span-2">
+              <div class="flex items-center justify-between mb-4">
+                <div>
+                  <h3 class="text-base font-bold text-foreground">Cash Flow Dynamics</h3>
+                  <p class="text-xs text-muted">Monthly Inflow vs Outflow Comparison</p>
+                </div>
+                <span class="badge badge-secondary text-xs">Past 6 Months</span>
+              </div>
+              <div class="h-64">
+                <canvas id="cashflowChartCanvas"></canvas>
+              </div>
+            </div>
+
+            <!-- Category Spend Donut (1 col) -->
+            <div class="card p-5 flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-2">
+                  <h3 class="text-base font-bold text-foreground">Spending Breakdown</h3>
+                  <span class="badge badge-secondary text-xs">This Month</span>
+                </div>
+                <p class="text-xs text-muted mb-4">Category distribution</p>
+              </div>
+              <div class="h-56 relative flex items-center justify-center">
+                <canvas id="categoryDonutCanvas"></canvas>
+              </div>
+              <div class="text-center pt-2">
+                <span class="text-xs text-muted">Total Spent: <strong class="text-foreground" id="donutCenterSpend">$0.00</strong></span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Bottom Grid: Recent Transactions, Budgets, and Accounts -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Recent Transactions Table (2 cols) -->
+            <div class="card p-5 lg:col-span-2">
+              <div class="flex items-center justify-between mb-4">
+                <div>
+                  <h3 class="text-base font-bold text-foreground">Recent Ledger Activity</h3>
+                  <p class="text-xs text-muted">Latest categorized financial movements</p>
+                </div>
+                <button class="btn btn-secondary btn-xs" onclick="window.app.navigate('transactions')">
+                  View Full Ledger <i data-lucide="arrow-right" class="w-3 h-3 ml-1"></i>
+                </button>
+              </div>
+
+              <div id="recentTransactionsList" class="space-y-2">
+                <!-- Injected by transactions.js -->
+              </div>
+            </div>
+
+            <!-- Budgets Widget & Accounts Mini (1 col) -->
+            <div class="space-y-6">
+              <!-- Budget Health Widget -->
+              <div class="card p-5" id="dashboardBudgetWidget">
+                <!-- Injected by budgets.js -->
+              </div>
+
+              <!-- Quick Accounts Widget -->
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <h3 class="text-sm font-semibold text-foreground">Active Accounts</h3>
+                  <button class="text-xs text-indigo-400 hover:underline" onclick="window.app.navigate('accounts')">Manage</button>
+                </div>
+                <div id="dashboardAccountsList" class="space-y-2">
+                  <!-- Injected by accounts.js -->
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ==================== USER VIEW 2: TRANSACTIONS LEDGER ==================== -->
+        <section class="view-panel" id="view-transactions">
+          <div class="card p-6 mb-6">
+            
+            <!-- Filter Bar -->
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+              
+              <!-- Search Input -->
+              <div class="flex-1 relative">
+                <i data-lucide="search" class="w-4 h-4 text-muted absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+                <input type="text" class="form-input pl-10" id="txSearchInput" placeholder="Search merchant, description, tag, notes (Press '/' to focus)..." style="padding-left: 2.5rem;">
+              </div>
+
+              <!-- Filter Dropdowns -->
+              <div class="flex items-center gap-2 flex-wrap">
+                <select class="form-select text-xs py-2 w-auto" id="txTypeFilter">
+                  <option value="all">All Types</option>
+                  <option value="expense">Expenses Only</option>
+                  <option value="income">Incomes Only</option>
+                  <option value="transfer">Transfers</option>
+                </select>
+
+                <select class="form-select text-xs py-2 w-auto" id="txCategoryFilter">
+                  <option value="all">All Categories</option>
+                </select>
+
+                <select class="form-select text-xs py-2 w-auto" id="txAccountFilter">
+                  <option value="all">All Accounts</option>
+                </select>
+
+                <select class="form-select text-xs py-2 w-auto" id="txDateFilter">
+                  <option value="all">All Time</option>
+                  <option value="this_month">This Month</option>
+                  <option value="last_month">Last Month</option>
+                  <option value="last_90">Last 90 Days</option>
+                  <option value="this_year">This Year</option>
+                </select>
+
+                <!-- Bulk Selection & Action Controls -->
+                <button class="btn btn-secondary btn-sm hidden" id="txBatchDeleteBtn">
+                  <i data-lucide="trash-2" class="w-4 h-4 text-rose-400"></i>
+                  <span id="txBatchCount">Delete (0)</span>
+                </button>
+
+                <button class="btn btn-primary btn-sm" onclick="window.app.openTxModal()">
+                  <i data-lucide="plus" class="w-4 h-4"></i>
+                  <span>Add Transaction</span>
+                </button>
+              </div>
+
+            </div>
+
+            <!-- Transactions Table -->
+            <div class="overflow-x-auto rounded-xl border border-border">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="border-b border-border bg-surface-elevated text-xs font-semibold text-muted uppercase tracking-wider">
+                    <th class="py-3 px-4 w-10">
+                      <input type="checkbox" id="txSelectAllCheckbox" class="rounded border-border">
+                    </th>
+                    <th class="py-3 px-4">Date</th>
+                    <th class="py-3 px-4">Merchant / Description</th>
+                    <th class="py-3 px-4">Category</th>
+                    <th class="py-3 px-4">Account</th>
+                    <th class="py-3 px-4 text-right">Amount</th>
+                    <th class="py-3 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="txTableBody" class="divide-y divide-border/30 text-sm">
+                  <!-- Injected by transactions.js -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Empty State / Pagination Info -->
+            <div class="flex items-center justify-between pt-4 text-xs text-muted">
+              <div id="txCountInfo">Showing 0 transactions</div>
+              <div class="flex items-center gap-2">
+                <button class="btn btn-secondary btn-xs" onclick="window.exportManager.exportCSV()">
+                  <i data-lucide="download" class="w-3 h-3"></i> Export CSV
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ==================== USER VIEW 3: BUDGETS & ALERTS ==================== -->
+        <section class="view-panel" id="view-budgets">
+          
+          <!-- Top Budget Overview Summary -->
+          <div class="card p-6 mb-6">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <h3 class="text-lg font-bold text-foreground">Monthly Budget Intelligence</h3>
+                <p class="text-xs text-muted">Proactive category thresholds, overspending early warnings, and monthly burn forecast</p>
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="window.app.openBudgetModal()">
+                <i data-lucide="plus" class="w-4 h-4"></i> Create Category Budget
+              </button>
+            </div>
+
+            <!-- Overall Budget Progress Bar -->
+            <div class="mt-6 p-4 rounded-xl bg-surface-elevated border border-border/40" id="overallBudgetBanner">
+              <!-- Injected by budgets.js -->
+            </div>
+          </div>
+
+          <!-- Category Budgets Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="budgetsGridContainer">
+            <!-- Injected by budgets.js -->
+          </div>
+
+        </section>
+
+        <!-- ==================== USER VIEW 4: ANALYTICS & INSIGHTS ==================== -->
+        <section class="view-panel" id="view-analytics">
+          
+          <!-- Analytics Toolbar -->
+          <div class="card p-4 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <h3 class="text-base font-bold text-foreground">Financial Analytics & Spending Velocity</h3>
+              <p class="text-xs text-muted">Visual breakdown of cashflow trends, category distribution, and burn rates</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button class="btn btn-secondary btn-xs active" data-range="6m" id="analyticsRange6M">Last 6 Months</button>
+              <button class="btn btn-secondary btn-xs" data-range="1y" id="analyticsRange1Y">1 Year</button>
+            </div>
+          </div>
+
+          <!-- Charts Row 1 -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            
+            <!-- Inflow vs Outflow Bar Chart -->
+            <div class="card p-5">
+              <div class="flex items-center justify-between mb-4">
+                <h4 class="text-sm font-bold text-foreground">Income vs Spending (Monthly Comparison)</h4>
+                <span class="badge badge-secondary text-xs">Cash Flow</span>
+              </div>
+              <div class="h-64">
+                <canvas id="analyticsBarChartCanvas"></canvas>
+              </div>
+            </div>
+
+            <!-- Net Savings Trajectory Line Chart -->
+            <div class="card p-5">
+              <div class="flex items-center justify-between mb-4">
+                <h4 class="text-sm font-bold text-foreground">Net Wealth Growth & Cumulative Savings</h4>
+                <span class="badge badge-emerald text-xs">Trajectory</span>
+              </div>
+              <div class="h-64">
+                <canvas id="analyticsLineChartCanvas"></canvas>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Charts Row 2: Category Polar / Radar & Spending Velocity -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Category Donut Detail (1 col) -->
+            <div class="card p-5">
+              <h4 class="text-sm font-bold text-foreground mb-1">Expense Share by Category</h4>
+              <p class="text-xs text-muted mb-4">Current month percentage</p>
+              <div class="h-60 relative flex items-center justify-center">
+                <canvas id="analyticsDonutCanvas"></canvas>
+              </div>
+            </div>
+
+            <!-- Category Spend Ranking Table (2 cols) -->
+            <div class="card p-5 lg:col-span-2">
+              <div class="flex items-center justify-between mb-3">
+                <h4 class="text-sm font-bold text-foreground">Category Spend Velocity & Burn Rates</h4>
+                <span class="text-xs text-muted">Ranked by volume</span>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                  <thead>
+                    <tr class="border-b border-border/60 text-muted uppercase">
+                      <th class="py-2.5">Category</th>
+                      <th class="py-2.5">Total Spent</th>
+                      <th class="py-2.5">% of Total</th>
+                      <th class="py-2.5">Transactions</th>
+                      <th class="py-2.5 text-right">Avg / Tx</th>
+                    </tr>
+                  </thead>
+                  <tbody id="analyticsCategoryTableBody" class="divide-y divide-border/30">
+                    <!-- Injected by charts.js -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+
+        </section>
+
+        <!-- ==================== USER VIEW 5: ACCOUNTS & NET WORTH ==================== -->
+        <section class="view-panel" id="view-accounts">
+          
+          <!-- Net Worth Header Card -->
+          <div class="card p-6 mb-6">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <span class="text-xs font-semibold text-muted uppercase tracking-wider">Total Consolidated Net Worth</span>
+                <div class="text-3xl font-extrabold text-foreground mt-1" id="accountsTotalNetWorth">$0.00</div>
+                <p class="text-xs text-emerald-400 mt-1">Real-time aggregate across checking, savings, credit cards & investments</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <button class="btn btn-secondary btn-sm" onclick="window.app.openTransferModal()">
+                  <i data-lucide="arrow-left-right" class="w-4 h-4"></i> Transfer Funds
+                </button>
+                <button class="btn btn-primary btn-sm" onclick="window.app.openAccountModal()">
+                  <i data-lucide="plus" class="w-4 h-4"></i> Add Account
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Accounts Cards Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="accountsGridContainer">
+            <!-- Injected by accounts.js -->
+          </div>
+
+        </section>
+
+        <!-- ==================== USER VIEW 6: RECURRING BILLS ==================== -->
+        <section class="view-panel" id="view-recurring">
+          
+          <div class="card p-6 mb-6">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <h3 class="text-lg font-bold text-foreground">Recurring Subscriptions & Fixed Bills</h3>
+                <p class="text-xs text-muted">Track monthly overhead, avoid sneaky renewals, and record payments in 1 click</p>
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="window.app.openRecurringModal()">
+                <i data-lucide="plus" class="w-4 h-4"></i> Add Subscription / Bill
+              </button>
+            </div>
+
+            <!-- Monthly Overhead Estimate -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
+              <div class="p-4 rounded-xl bg-surface-elevated border border-border/40">
+                <div class="text-xs text-muted">Monthly Subscriptions Burn</div>
+                <div class="text-xl font-bold text-rose-400 mt-1" id="recMonthlyTotal">$0.00</div>
+              </div>
+              <div class="p-4 rounded-xl bg-surface-elevated border border-border/40">
+                <div class="text-xs text-muted">Active Recurring Services</div>
+                <div class="text-xl font-bold text-foreground mt-1" id="recActiveCount">0 Services</div>
+              </div>
+              <div class="p-4 rounded-xl bg-surface-elevated border border-border/40">
+                <div class="text-xs text-muted">Next Upcoming Due</div>
+                <div class="text-base font-bold text-amber-400 mt-1" id="recNextUpcomingText">None Due Soon</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recurring Bills List -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="recurringGridContainer">
+            <!-- Injected by recurring.js -->
+          </div>
+
+        </section>
+
+        <!-- ==================== USER VIEW 7: SAVINGS GOALS ==================== -->
+        <section class="view-panel" id="view-goals">
+          
+          <div class="card p-6 mb-6">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <h3 class="text-lg font-bold text-foreground">Savings Targets & Discipline Milestones</h3>
+                <p class="text-xs text-muted">Gamified goal tracking, progress velocity, and visual milestone rewards</p>
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="window.app.openGoalModal()">
+                <i data-lucide="plus" class="w-4 h-4"></i> Create Savings Goal
+              </button>
+            </div>
+
+            <!-- Gamified Streak & Goal Overview -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
+              <div class="p-4 rounded-xl bg-surface-elevated border border-border/40 flex items-center gap-3">
+                <span class="text-3xl">🎯</span>
+                <div>
+                  <div class="text-xs text-muted">Total Saved Toward Goals</div>
+                  <div class="text-xl font-bold text-emerald-400 mt-0.5" id="goalsTotalSaved">$0.00</div>
+                </div>
+              </div>
+              <div class="p-4 rounded-xl bg-surface-elevated border border-border/40 flex items-center gap-3">
+                <span class="text-3xl">🏆</span>
+                <div>
+                  <div class="text-xs text-muted">Overall Goal Completion</div>
+                  <div class="text-xl font-bold text-indigo-400 mt-0.5" id="goalsOverallPercent">0%</div>
+                </div>
+              </div>
+              <div class="p-4 rounded-xl bg-surface-elevated border border-border/40 flex items-center gap-3">
+                <span class="text-3xl">🔥</span>
+                <div>
+                  <div class="text-xs text-muted">Discipline Streak</div>
+                  <div class="text-xl font-bold text-amber-400 mt-0.5" id="goalsStreakText">14 Days Active</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Goals Cards Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="goalsGridContainer">
+            <!-- Injected by goals.js -->
+          </div>
+
+        </section>
+
+        <!-- ==================== USER VIEW 8: EXPORT & SETTINGS ==================== -->
+        <section class="view-panel" id="view-settings">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            <!-- Data Export Center -->
+            <div class="card p-6">
+              <h3 class="text-base font-bold text-foreground mb-1">Data Portability & Export</h3>
+              <p class="text-xs text-muted mb-6">Download your complete financial records in multiple formats</p>
+
+              <div class="space-y-4">
+                <div class="p-4 rounded-xl bg-surface-elevated border border-border/40 flex items-center justify-between">
+                  <div>
+                    <div class="text-sm font-semibold text-foreground">Export as CSV Ledger</div>
+                    <div class="text-xs text-muted">Compatible with Excel, Google Sheets & Tax Software</div>
+                  </div>
+                  <button class="btn btn-secondary btn-sm" onclick="window.exportManager.exportCSV()">
+                    <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Export CSV
+                  </button>
+                </div>
+
+                <div class="p-4 rounded-xl bg-surface-elevated border border-border/40 flex items-center justify-between">
+                  <div>
+                    <div class="text-sm font-semibold text-foreground">Full JSON Backup</div>
+                    <div class="text-xs text-muted">Complete state export (accounts, budgets, recurring, goals)</div>
+                  </div>
+                  <button class="btn btn-secondary btn-sm" onclick="window.exportManager.exportJSON()">
+                    <i data-lucide="file-code" class="w-4 h-4"></i> Backup JSON
+                  </button>
+                </div>
+
+                <div class="p-4 rounded-xl bg-surface-elevated border border-border/40 flex items-center justify-between">
+                  <div>
+                    <div class="text-sm font-semibold text-foreground">Printable Statement / PDF</div>
+                    <div class="text-xs text-muted">Formatted comprehensive monthly financial summary</div>
+                  </div>
+                  <button class="btn btn-secondary btn-sm" onclick="window.exportManager.printFinancialReport()">
+                    <i data-lucide="printer" class="w-4 h-4"></i> Print Summary
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Restore Backup Center -->
+            <div class="card p-6">
+              <h3 class="text-base font-bold text-foreground mb-1">Restore & Data Management</h3>
+              <p class="text-xs text-muted mb-6">Restore previous ledger backups or manage local storage</p>
+
+              <div class="space-y-4">
+                <div class="p-4 rounded-xl bg-surface-elevated border border-border/40">
+                  <label class="text-sm font-semibold text-foreground block mb-1">Restore from JSON Backup</label>
+                  <p class="text-xs text-muted mb-3">Upload a previously exported VaultExpense JSON file.</p>
+                  <input type="file" id="jsonImportInput" accept=".json" class="text-xs text-muted file:btn file:btn-secondary file:btn-xs file:mr-3">
+                </div>
+
+                <div class="p-4 rounded-xl bg-surface-elevated border border-border/40 flex items-center justify-between">
+                  <div>
+                    <div class="text-sm font-semibold text-foreground">Reload Fresh Demo Data</div>
+                    <div class="text-xs text-muted">Restores default demo dataset with accounts, bills & goals</div>
+                  </div>
+                  <button class="btn btn-secondary btn-sm" onclick="window.app.resetDemoData()">
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i> Reset Data
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- Modal 0: AUTHENTICATION (Login / Signup) -->
+  <div class="modal-backdrop" id="authModal">
+    <div class="modal-card max-w-md">
+      <div class="modal-header border-b-0 pb-0">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-lg bg-indigo-500 flex items-center justify-center text-white">
+            <i data-lucide="shield-check" class="w-4 h-4"></i>
+          </div>
+          <h3 class="text-base font-bold text-foreground">VaultExpense Access</h3>
+        </div>
+        <button class="icon-btn-sm" onclick="window.app.closeAllModals()"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+
+      <!-- Tab Switcher (Sign In vs Sign Up) -->
+      <div class="px-6 pt-3">
+        <div class="grid grid-cols-2 gap-1 p-1 rounded-xl bg-surface-elevated border border-border/40">
+          <button type="button" class="btn btn-xs active" id="authTabLogin" onclick="window.app.switchAuthTab('login')">Sign In</button>
+          <button type="button" class="btn btn-xs" id="authTabSignup" onclick="window.app.switchAuthTab('signup')">Create Account</button>
+        </div>
+      </div>
+
+      <!-- Form 1: Login Form -->
+      <form id="loginForm" class="p-6 space-y-4">
+        <div class="form-group mb-0">
+          <label class="form-label" for="loginEmail">Email Address</label>
+          <input type="email" class="form-input" id="loginEmail" placeholder="e.g. demo@vault.io" required value="demo@vault.io">
+        </div>
+
+        <div class="form-group mb-0">
+          <div class="flex justify-between">
+            <label class="form-label" for="loginPassword">Password</label>
+            <span class="text-[11px] text-muted font-mono">Demo: Demo@123 / Admin@123</span>
+          </div>
+          <input type="password" class="form-input" id="loginPassword" placeholder="••••••••" required value="Demo@123">
+        </div>
+
+        <div class="p-3 rounded-xl bg-surface-elevated/60 border border-border/40 space-y-2">
+          <div class="text-[11px] font-bold text-muted uppercase tracking-wider">Quick Demo 1-Click Login:</div>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" class="btn btn-secondary btn-xs text-left" onclick="window.app.fillQuickAuth('admin@vault.io', 'Admin@123')">
+              🛡️ Demo Admin
+            </button>
+            <button type="button" class="btn btn-secondary btn-xs text-left" onclick="window.app.fillQuickAuth('demo@vault.io', 'Demo@123')">
+              👤 Demo User
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-full py-2.5 font-bold">
+          <i data-lucide="log-in" class="w-4 h-4"></i> Sign In to Financial OS
+        </button>
+      </form>
+
+      <!-- Form 2: Signup Form -->
+      <form id="signupForm" class="p-6 space-y-3 hidden">
+        <div class="form-group mb-0">
+          <label class="form-label" for="signupName">Full Name</label>
+          <input type="text" class="form-input" id="signupName" placeholder="e.g. Jordan Hayes" required>
+        </div>
+
+        <div class="form-group mb-0">
+          <label class="form-label" for="signupEmail">Email Address</label>
+          <input type="email" class="form-input" id="signupEmail" placeholder="jordan@example.com" required>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div class="form-group mb-0">
+            <label class="form-label" for="signupRole">Account Role</label>
+            <select class="form-select" id="signupRole">
+              <option value="user">👤 User</option>
+              <option value="admin">🛡️ Administrator</option>
+            </select>
+          </div>
+          <div class="form-group mb-0">
+            <label class="form-label" for="signupCurrency">Currency</label>
+            <select class="form-select" id="signupCurrency">
+              <option value="USD">USD ($)</option>
+              <option value="EUR">EUR (€)</option>
+              <option value="GBP">GBP (£)</option>
+              <option value="INR">INR (₹)</option>
+              <option value="JPY">JPY (¥)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group mb-0">
+          <label class="form-label" for="signupPassword">Password</label>
+          <input type="password" class="form-input" id="signupPassword" placeholder="Minimum 6 characters" required minlength="6">
+        </div>
+
+        <button type="submit" class="btn btn-primary w-full py-2.5 font-bold mt-2">
+          <i data-lucide="user-check" class="w-4 h-4"></i> Complete Registration
+        </button>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- Modal: Admin Create User -->
+  <div class="modal-backdrop" id="adminUserModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="text-base font-bold text-foreground">Admin: Create Platform User</h3>
+        <button class="icon-btn-sm" onclick="window.app.closeAllModals()"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+      <form id="adminCreateUserForm">
+        <div class="modal-body space-y-4">
+          <div class="form-group mb-0">
+            <label class="form-label" for="admNewName">Full Name</label>
+            <input type="text" class="form-input" id="admNewName" placeholder="e.g. Morgan Stanley" required>
+          </div>
+
+          <div class="form-group mb-0">
+            <label class="form-label" for="admNewEmail">Email Address</label>
+            <input type="email" class="form-input" id="admNewEmail" placeholder="morgan@vault.io" required>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div class="form-group mb-0">
+              <label class="form-label" for="admNewRole">Assigned Role</label>
+              <select class="form-select" id="admNewRole">
+                <option value="user">👤 Regular User</option>
+                <option value="admin">🛡️ Platform Admin</option>
+              </select>
+            </div>
+            <div class="form-group mb-0">
+              <label class="form-label" for="admNewCurrency">Default Currency</label>
+              <select class="form-select" id="admNewCurrency">
+                <option value="USD">USD ($)</option>
+                <option value="EUR">EUR (€)</option>
+                <option value="GBP">GBP (£)</option>
+                <option value="INR">INR (₹)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group mb-0">
+            <label class="form-label" for="admNewPassword">Temporary Password</label>
+            <input type="password" class="form-input" id="admNewPassword" value="Vault@123" required minlength="6">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="window.app.closeAllModals()">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-sm">Create User Record</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Admin Edit / Add Category -->
+  <div class="modal-backdrop" id="adminCategoryModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="text-base font-bold text-foreground" id="adminCategoryModalTitle">Add Global Category</h3>
+        <button class="icon-btn-sm" onclick="window.app.closeAllModals()"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+      <form id="adminCategoryForm">
+        <input type="hidden" id="adminCatId">
+        <div class="modal-body space-y-4">
+          <div class="form-group mb-0">
+            <label class="form-label" for="adminCatName">Category Name</label>
+            <input type="text" class="form-input" id="adminCatName" placeholder="e.g. Cloud Subscriptions" required>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div class="form-group mb-0">
+              <label class="form-label" for="adminCatType">Category Classification</label>
+              <select class="form-select" id="adminCatType" required>
+                <option value="expense">Expense</option>
+                <option value="income">Income</option>
+                <option value="transfer">Transfer</option>
+              </select>
+            </div>
+            <div class="form-group mb-0">
+              <label class="form-label" for="adminCatColor">Color Hex</label>
+              <div class="flex items-center gap-2">
+                <input type="color" class="h-9 w-12 rounded cursor-pointer bg-transparent" id="adminCatColorPicker" value="#6366F1" oninput="document.getElementById('adminCatColor').value = this.value">
+                <input type="text" class="form-input text-xs font-mono" id="adminCatColor" value="#6366F1" required oninput="document.getElementById('adminCatColorPicker').value = this.value">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group mb-0">
+            <label class="form-label" for="adminCatIcon">Lucide Icon Name</label>
+            <select class="form-select" id="adminCatIcon">
+              <option value="tag">tag</option>
+              <option value="shopping-cart">shopping-cart</option>
+              <option value="utensils">utensils</option>
+              <option value="car">car</option>
+              <option value="home">home</option>
+              <option value="zap">zap</option>
+              <option value="film">film</option>
+              <option value="activity">activity</option>
+              <option value="briefcase">briefcase</option>
+              <option value="laptop">laptop</option>
+              <option value="plane">plane</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="window.app.closeAllModals()">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-sm">Save Global Category</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: SDC Project Defense & Viva Preparation -->
+  <div class="modal-backdrop" id="vivaModal">
+    <div class="modal-card max-w-2xl">
+      <div class="modal-header">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">🎓</span>
+          <div>
+            <h3 class="text-base font-bold text-foreground">SDC Project Defense & Review Guide</h3>
+            <p class="text-[11px] text-muted">Architecture overview & Viva questions cheatsheet</p>
+          </div>
+        </div>
+        <button class="icon-btn-sm" onclick="window.app.closeAllModals()"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+      <div class="modal-body space-y-4 text-xs text-muted max-h-[70vh] overflow-y-auto">
+        <div class="p-3.5 rounded-xl bg-surface-elevated border border-border/40">
+          <div class="font-bold text-foreground text-sm mb-1">1. Problem Statement & Business System</div>
+          <p>VaultExpense solves personal and small business financial opacity by providing real-time multi-account tracking, category-wise proactive overspending alerts, automated recurring bill management, and visual analytics using pure client-side web technologies.</p>
+        </div>
+
+        <div class="p-3.5 rounded-xl bg-surface-elevated border border-border/40">
+          <div class="font-bold text-foreground text-sm mb-1">2. Architecture & Modules (Admin vs User)</div>
+          <ul class="list-disc list-inside space-y-1 mt-1">
+            <li><strong class="text-indigo-400">Admin Module:</strong> User management (create, suspend, promote, reset passwords), Global category taxonomy, System analytics, Security audit trails, and Platform JSON backup.</li>
+            <li><strong class="text-emerald-400">User Module:</strong> Dashboard KPIs, Transaction ledger with search/filters, Budget overspend alerts, Multi-account portfolio, Recurring bill reminders, Savings goals with streaks, and CSV/JSON/PDF exports.</li>
+          </ul>
+        </div>
+
+        <div class="p-3.5 rounded-xl bg-surface-elevated border border-border/40">
+          <div class="font-bold text-foreground text-sm mb-1">3. Technology Stack & Compliance</div>
+          <p>Built strictly with <strong class="text-foreground">HTML5, CSS3 (CSS Grid & Flexbox), and Vanilla ES6+ JavaScript</strong>. Uses LocalStorage for user authentication and multi-user data scoping (<code class="text-amber-400 font-mono">vault_users_db_v1</code>, <code class="text-amber-400 font-mono">vault_expense_user_data_*</code>).</p>
+        </div>
+
+        <div class="p-3.5 rounded-xl bg-surface-elevated border border-border/40">
+          <div class="font-bold text-foreground text-sm mb-1">4. Sample Demo Accounts</div>
+          <div class="grid grid-cols-2 gap-2 mt-1">
+            <div class="p-2 rounded bg-surface border border-border font-mono">
+              <div class="text-foreground font-bold">Admin:</div>
+              <div>admin@vault.io / Admin@123</div>
+            </div>
+            <div class="p-2 rounded bg-surface border border-border font-mono">
+              <div class="text-foreground font-bold">User:</div>
+              <div>demo@vault.io / Demo@123</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary btn-sm" onclick="window.app.closeAllModals()">Close Guide</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 1: Add / Edit Transaction -->
+  <div class="modal-backdrop" id="txModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="text-base font-bold text-foreground" id="txModalTitle">Add New Transaction</h3>
+        <button class="icon-btn-sm" onclick="window.app.closeAllModals()"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+      <form id="txForm">
+        <input type="hidden" id="txFormId">
+        <div class="modal-body space-y-4">
+          
+          <!-- Transaction Type Toggle -->
+          <div class="grid grid-cols-3 gap-2 p-1 rounded-xl bg-surface-elevated border border-border/40">
+            <button type="button" class="btn btn-xs tx-type-btn active" data-type="expense">Expense</button>
+            <button type="button" class="btn btn-xs tx-type-btn" data-type="income">Income</button>
+            <button type="button" class="btn btn-xs tx-type-btn" data-type="transfer">Transfer</button>
+          </div>
+          <input type="hidden" id="txFormType" value="expense">
+
+          <!-- Amount -->
+          <div class="form-group mb-0">
+            <label class="form-label" for="txFormAmount">Amount</label>
+            <div class="relative">
+              <input type="number" step="0.01" min="0.01" required class="form-input text-lg font-bold" id="txFormAmount" placeholder="0.00">
+            </div>
+          </div>
+
+          <!-- Description / Merchant -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="form-group mb-0">
+              <label class="form-label" for="txFormMerchant">Merchant / Payee</label>
+              <input type="text" class="form-input" id="txFormMerchant" placeholder="e.g. Whole Foods Market" required>
+            </div>
+            <div class="form-group mb-0">
+              <label class="form-label" for="txFormDate">Date</label>
+              <input type="date" class="form-input" id="txFormDate" required>
+            </div>
+          </div>
+
+          <!-- Category & Account -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="form-group mb-0" id="txCategoryGroup">
+              <label class="form-label" for="txFormCategory">Category</label>
+              <select class="form-select" id="txFormCategory" required></select>
+            </div>
+            <div class="form-group mb-0">
+              <label class="form-label" for="txFormAccount">Account</label>
+              <select class="form-select" id="txFormAccount" required></select>
+            </div>
+          </div>
+
+          <!-- To Account (for Transfers) -->
+          <div class="form-group mb-0 hidden" id="txToAccountGroup">
+            <label class="form-label" for="txFormToAccount">Destination Account (To)</label>
+            <select class="form-select" id="txFormToAccount"></select>
+          </div>
+
+          <!-- Tags & Notes -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="form-group mb-0">
+              <label class="form-label" for="txFormTags">Tags (comma separated)</label>
+              <input type="text" class="form-input" id="txFormTags" placeholder="e.g. groceries, organic">
+            </div>
+            <div class="form-group mb-0">
+              <label class="form-label" for="txFormNotes">Notes (optional)</label>
+              <input type="text" class="form-input" id="txFormNotes" placeholder="Additional details...">
+            </div>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="window.app.closeAllModals()">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-sm" id="txFormSubmitBtn">Save Transaction</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 2: Transfer Funds Wizard -->
+  <div class="modal-backdrop" id="transferModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="text-base font-bold text-foreground">Transfer Funds Between Accounts</h3>
+        <button class="icon-btn-sm" onclick="window.app.closeAllModals()"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+      <form id="transferForm">
+        <div class="modal-body space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="form-group mb-0">
+              <label class="form-label" for="transferFromAccount">Source Account (From)</label>
+              <select class="form-select" id="transferFromAccount" required></select>
+            </div>
+            <div class="form-group mb-0">
+              <label class="form-label" for="transferToAccount">Destination Account (To)</label>
+              <select class="form-select" id="transferToAccount" required></select>
+            </div>
+          </div>
+
+          <div class="form-group mb-0">
+            <label class="form-label" for="transferAmount">Transfer Amount</label>
+            <input type="number" step="0.01" min="0.01" required class="form-input text-lg font-bold" id="transferAmount" placeholder="0.00">
+          </div>
+
+          <div class="form-group mb-0">
+            <label class="form-label" for="transferDate">Date</label>
+            <input type="date" class="form-input" id="transferDate" required>
+          </div>
+
+          <div class="form-group mb-0">
+            <label class="form-label" for="transferNotes">Transfer Memo</label>
+            <input type="text" class="form-input" id="transferNotes" placeholder="e.g. Monthly emergency savings allocation">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="window.app.closeAllModals()">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-sm">Execute Transfer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 3: Set / Edit Category Budget -->
+  <div class="modal-backdrop" id="budgetModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="text-base font-bold text-foreground">Configure Category Budget</h3>
+        <button class="icon-btn-sm" onclick="window.app.closeAllModals()"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+      <form id="budgetForm">
+        <div class="modal-body space-y-4">
+          <div class="form-group mb-0">
+            <label class="form-label" for="budgetCategorySelect">Expense Category</label>
+            <select class="form-select" id="budgetCategorySelect" required></select>
+          </div>
+
+          <div class="form-group mb-0">
+            <label class="form-label" for="budgetLimitInput">Monthly Limit</label>
+            <input type="number" step="10" min="1" required class="form-input text-lg font-bold" id="budgetLimitInput" placeholder="500.00">
+          </div>
+
+          <div class="form-group mb-0">
+            <label class="form-label" for="budgetThresholdInput">Early Warning Alert Threshold (%)</label>
+            <input type="number" min="50" max="95" value="80" required class="form-input" id="budgetThresholdInput">
+            <span class="text-xs text-muted mt-1 block">Trigger warning alert when spend exceeds this % of monthly limit</span>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="window.app.closeAllModals()">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-sm">Save Budget</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 4: Add / Edit Account -->
+  <div class="modal-backdrop" id="accountModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="text-base font-bold text-foreground" id="accountModalTitle">Add Financial Account</h3>
+        <button class="icon-btn-sm" onclick="window.app.closeAllModals()"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+      <form id="accountForm">
+        <input type="hidden" id="accountFormId">
+        <div class="modal-body space-y-4">
+          <div class="form-group mb-0">
+            <label class="form-label" for="accFormName">Account Name</label>
+            <input type="text" class="form-input" id="accFormName" placeholder="e.g. Sapphire Preferred Card" required>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="form-group mb-0">
+              <label class="form-label" for="accFormType">Account Type</label>
+              <select class="form-select" id="accFormType" required>
+                <option value="checking">Checking Account</option>
+                <option value="savings">Savings Account</option>
+                <option value="credit">Credit Card</option>
+                <option value="cash">Cash Wallet</option>
+                <option value="investment">Investment / Crypto</option>
+              </select>
+            </div>
+            <div class="form-group mb-0">
+              <label class="form-label" for="accFormBalance">Current Balance</label>
+              <input type="number" step="0.01" class="form-input" id="accFormBalance" placeholder="0.00" required>
+            </div>
+          </div>
+
+          <div class="form-group mb-0 hidden" id="accCreditLimitGroup">
+            <label class="form-label" for="accFormLimit">Credit Limit</label>
+            <input type="number" step="100" class="form-input" id="accFormLimit" placeholder="5000.00">
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="form-group mb-0">
+              <label class="form-label" for="accFormInstitution">Bank / Institution</label>
+              <input type="text" class="form-input" id="accFormInstitution" placeholder="e.g. Chase Bank">
+            </div>
+            <div class="form-group mb-0">
+              <label class="form-label" for="accFormNumber">Account / Card Number</label>
+              <input type="text" class="form-input" id="accFormNumber" placeholder="•••• 1234">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="window.app.closeAllModals()">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-sm">Save Account</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 5: Add / Edit Recurring Bill -->
+  <div class="modal-backdrop" id="recurringModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="text-base font-bold text-foreground" id="recurringModalTitle">Add Recurring Subscription</h3>
+        <button class="icon-btn-sm" onclick="window.app.closeAllModals()"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+      <form id="recurringForm">
+        <input type="hidden" id="recFormId">
+        <div class="modal-body space-y-4">
+          <div class="form-group mb-0">
+            <label class="form-label" for="recFormName">Subscription / Bill Name</label>
+            <input type="text" class="form-input" id="recFormName" placeholder="e.g. Netflix 4K UHD" required>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="form-group mb-0">
+              <label class="form-label" for="recFormAmount">Amount</label>
+              <input type="number" step="0.01" min="0.01" class="form-input" id="recFormAmount" placeholder="19.99" required>
+            </div>
+            <div class="form-group mb-0">
+              <label class="form-label" for="recFormFrequency">Frequency</label>
+              <select class="form-select" id="recFormFrequency" required>
+                <option value="monthly">Monthly</option>
+                <option value="weekly">Weekly</option>
+                <option value="yearly">Yearly</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="form-group mb-0">
+              <label class="form-label" for="recFormCategory">Category</label>
+              <select class="form-select" id="recFormCategory" required></select>
+            </div>
+            <div class="form-group mb-0">
+              <label class="form-label" for="recFormAccount">Debits From Account</label>
+              <select class="form-select" id="recFormAccount" required></select>
+            </div>
+          </div>
+
+          <div class="form-group mb-0">
+            <label class="form-label" for="recFormNextDate">Next Due Date</label>
+            <input type="date" class="form-input" id="recFormNextDate" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="window.app.closeAllModals()">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-sm">Save Subscription</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 6: Add / Edit Savings Goal -->
+  <div class="modal-backdrop" id="goalModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="text-base font-bold text-foreground" id="goalModalTitle">Create Savings Goal</h3>
+        <button class="icon-btn-sm" onclick="window.app.closeAllModals()"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+      <form id="goalForm">
+        <input type="hidden" id="goalFormId">
+        <div class="modal-body space-y-4">
+          <div class="form-group mb-0">
+            <label class="form-label" for="goalFormName">Goal Title</label>
+            <input type="text" class="form-input" id="goalFormName" placeholder="e.g. Tokyo Holiday Fund" required>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="form-group mb-0">
+              <label class="form-label" for="goalFormTarget">Target Amount</label>
+              <input type="number" step="50" min="1" class="form-input" id="goalFormTarget" placeholder="3500.00" required>
+            </div>
+            <div class="form-group mb-0">
+              <label class="form-label" for="goalFormCurrent">Already Saved</label>
+              <input type="number" step="50" min="0" class="form-input" id="goalFormCurrent" placeholder="500.00" required>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="form-group mb-0">
+              <label class="form-label" for="goalFormDate">Target Date</label>
+              <input type="date" class="form-input" id="goalFormDate">
+            </div>
+            <div class="form-group mb-0">
+              <label class="form-label" for="goalFormCategory">Goal Classification</label>
+              <input type="text" class="form-input" id="goalFormCategory" placeholder="e.g. Travel, Tech, Emergency">
+            </div>
+          </div>
+
+          <div class="form-group mb-0">
+            <label class="form-label" for="goalFormNotes">Motivation / Notes</label>
+            <textarea class="form-textarea" rows="2" id="goalFormNotes" placeholder="Why this goal matters to you..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="window.app.closeAllModals()">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-sm">Save Goal</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 7: Quick Contribute to Goal -->
+  <div class="modal-backdrop" id="contributeModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="text-base font-bold text-foreground">Contribute to Savings Goal</h3>
+        <button class="icon-btn-sm" onclick="window.app.closeAllModals()"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+      <form id="contributeForm">
+        <input type="hidden" id="contribGoalId">
+        <div class="modal-body space-y-4">
+          <div class="p-3.5 rounded-xl bg-surface-elevated border border-border/40">
+            <div class="text-xs text-muted">Contributing to Goal</div>
+            <div class="text-base font-bold text-foreground mt-0.5" id="contribGoalNameTitle">Savings Goal</div>
+          </div>
+
+          <div class="form-group mb-0">
+            <label class="form-label" for="contribAmount">Contribution Amount</label>
+            <input type="number" step="10" min="1" class="form-input text-lg font-bold" id="contribAmount" placeholder="100.00" required>
+          </div>
+
+          <div class="form-group mb-0">
+            <label class="form-label" for="contribFromAccount">Debit from Account (Optional)</label>
+            <select class="form-select" id="contribFromAccount">
+              <option value="">None (Don't create account transaction)</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="window.app.closeAllModals()">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-sm">Deposit Funds</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 8: Receipt OCR Scanner -->
+  <div class="modal-backdrop" id="scannerModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="flex items-center gap-2">
+          <i data-lucide="scan-line" class="w-5 h-5 text-indigo-400"></i>
+          <h3 class="text-base font-bold text-foreground">AI Receipt OCR Scanner</h3>
+        </div>
+        <button class="icon-btn-sm" onclick="window.app.closeAllModals()"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+      <div class="modal-body space-y-4">
+        
+        <!-- Drag & Drop Zone -->
+        <div id="receiptDropzone" class="border-2 border-dashed border-border rounded-2xl p-8 text-center hover:border-indigo-500/50 transition cursor-pointer">
+          <i data-lucide="upload-cloud" class="w-10 h-10 text-indigo-400 mx-auto mb-2 opacity-80"></i>
+          <p class="text-sm font-semibold text-foreground">Drag & drop receipt image here</p>
+          <p class="text-xs text-muted mt-1">PNG, JPG, WebP supported for automatic AI extraction</p>
+          <button type="button" class="btn btn-secondary btn-xs mt-3" onclick="document.getElementById('receiptFileInput').click()">
+            Browse File
+          </button>
+          <input type="file" id="receiptFileInput" accept="image/*" class="hidden">
+        </div>
+
+        <!-- Sample Receipts Quick Test -->
+        <div>
+          <div class="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Or test sample receipt:</div>
+          <div class="grid grid-cols-3 gap-2">
+            <button type="button" class="p-2.5 rounded-xl bg-surface-elevated border border-border text-left hover:border-indigo-500 transition" onclick="window.receiptScanner.loadSample(0)">
+              <div class="text-xs font-bold text-foreground">Trader Joe's</div>
+              <div class="text-[10px] text-muted">$54.75 • Groceries</div>
+            </button>
+            <button type="button" class="p-2.5 rounded-xl bg-surface-elevated border border-border text-left hover:border-indigo-500 transition" onclick="window.receiptScanner.loadSample(1)">
+              <div class="text-xs font-bold text-foreground">Apple Store</div>
+              <div class="text-[10px] text-muted">$179.00 • Gadgets</div>
+            </button>
+            <button type="button" class="p-2.5 rounded-xl bg-surface-elevated border border-border text-left hover:border-indigo-500 transition" onclick="window.receiptScanner.loadSample(2)">
+              <div class="text-xs font-bold text-foreground">Chipotle Grill</div>
+              <div class="text-[10px] text-muted">$23.40 • Dining</div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Scan Status & Results -->
+        <div id="receiptScanStatus" class="hidden"></div>
+        <div id="receiptScanResult" class="hidden"></div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer"></div>
+
+  <!-- Application Logic (ES Modules) -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
