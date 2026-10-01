@@ -17,7 +17,216 @@
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 </head>
 <body>
-  <div class="app-container">
+
+  <!-- ==================== DEDICATED FULLSCREEN AUTH SCREEN ==================== -->
+  <div id="authScreen" class="auth-screen-wrapper">
+    <div class="auth-container">
+      
+      <!-- Left Column: Branding, Value Pillars & Role Selector -->
+      <div class="auth-showcase">
+        <div class="auth-brand">
+          <div class="brand-icon-lg">
+            <i data-lucide="shield-check" class="w-8 h-8"></i>
+          </div>
+          <div>
+            <h1 class="auth-title">VaultExpense</h1>
+            <p class="auth-subtitle">Financial Operating System & Wealth Tracker</p>
+          </div>
+        </div>
+
+        <div class="auth-feature-cards">
+          <div class="feature-card">
+            <div class="feature-icon bg-indigo-500/20 text-indigo-400">
+              <i data-lucide="shield" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="feature-title">Dual Module RBAC Architecture</div>
+              <div class="feature-desc">Dedicated Administrator Governance & User Personal Wealth Cockpit.</div>
+            </div>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon bg-emerald-500/20 text-emerald-400">
+              <i data-lucide="coins" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="feature-title">Indian Rupee (₹) Financial Tracking</div>
+              <div class="feature-desc">Real-time Net Worth, multi-account transfers, and budget overspend alerts.</div>
+            </div>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon bg-amber-500/20 text-amber-400">
+              <i data-lucide="line-chart" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="feature-title">Interactive Visual Analytics</div>
+              <div class="feature-desc">HTML5 Canvas cashflow charts, category burn-rates & savings streaks.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 1-Click Role Quick Access -->
+        <div class="auth-role-hint">
+          <div class="text-xs font-bold text-muted uppercase tracking-wider mb-2">1-Click Quick Demo Sign In:</div>
+          <div class="grid grid-cols-2 gap-2.5">
+            <button type="button" class="role-hint-card" onclick="window.app.fillQuickAuth('admin@vault.io', 'Admin@123')">
+              <div class="flex items-center gap-2">
+                <span class="text-base">🛡️</span>
+                <div class="text-left">
+                  <div class="text-xs font-bold text-foreground">Admin Portal</div>
+                  <div class="text-[10px] text-muted">admin@vault.io</div>
+                </div>
+              </div>
+              <span class="badge badge-primary text-[9px] py-0 px-1">Admin</span>
+            </button>
+
+            <button type="button" class="role-hint-card" onclick="window.app.fillQuickAuth('demo@vault.io', 'Demo@123')">
+              <div class="flex items-center gap-2">
+                <span class="text-base">👤</span>
+                <div class="text-left">
+                  <div class="text-xs font-bold text-foreground">User Portal</div>
+                  <div class="text-[10px] text-muted">demo@vault.io</div>
+                </div>
+              </div>
+              <span class="badge badge-secondary text-[9px] py-0 px-1">User</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Login & Sign Up Form Card -->
+      <div class="auth-form-card">
+        <div class="auth-card-header">
+          <div class="flex items-center justify-between mb-3">
+            <span class="badge badge-primary text-xs font-semibold px-2.5 py-1" id="authPortalBadge">🛡️ User / Admin Gateway</span>
+            <button type="button" class="icon-btn-sm" id="authThemeToggleBtn" title="Toggle Theme" onclick="window.app.toggleTheme()">
+              <i data-lucide="sun" class="w-4 h-4"></i>
+            </button>
+          </div>
+          <h2 class="text-2xl font-bold text-foreground" id="authHeaderTitle">Welcome Back</h2>
+          <p class="text-xs text-muted mt-1" id="authHeaderSubtitle">Sign in to access your financial dashboard or admin module</p>
+        </div>
+
+        <!-- Tab Switcher -->
+        <div class="grid grid-cols-2 gap-1 p-1 rounded-xl bg-surface-elevated border border-border/40 my-4">
+          <button type="button" class="btn btn-sm active" id="mainTabLogin" onclick="window.app.switchMainAuthTab('login')">Sign In</button>
+          <button type="button" class="btn btn-sm" id="mainTabSignup" onclick="window.app.switchMainAuthTab('signup')">Create Account</button>
+        </div>
+
+        <!-- Continue with Google Button -->
+        <button type="button" class="btn-google w-full py-2.5 px-4 rounded-xl flex items-center justify-center gap-3 transition font-medium text-sm" onclick="window.app.openGoogleAuthModal()">
+          <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+          </svg>
+          <span class="text-foreground font-semibold" id="googleBtnText">Continue with Google</span>
+        </button>
+
+        <div class="auth-divider my-4">
+          <span>or continue with email</span>
+        </div>
+
+        <!-- Main Login Form -->
+        <form id="mainLoginForm" class="space-y-4">
+          <div class="form-group mb-0">
+            <label class="form-label" for="mainLoginEmail">Email Address</label>
+            <div class="relative">
+              <input type="email" class="form-input pl-9" id="mainLoginEmail" placeholder="admin@vault.io or demo@vault.io" required value="demo@vault.io">
+              <i data-lucide="mail" class="w-4 h-4 text-muted absolute left-3 top-3"></i>
+            </div>
+          </div>
+
+          <div class="form-group mb-0">
+            <div class="flex justify-between items-center mb-1">
+              <label class="form-label mb-0" for="mainLoginPassword">Password</label>
+              <span class="text-[11px] text-indigo-400 font-mono">Demo@123 / Admin@123</span>
+            </div>
+            <div class="relative">
+              <input type="password" class="form-input pl-9 pr-10" id="mainLoginPassword" placeholder="••••••••" required value="Demo@123">
+              <i data-lucide="lock" class="w-4 h-4 text-muted absolute left-3 top-3"></i>
+              <button type="button" class="absolute right-3 top-2.5 text-muted hover:text-foreground" onclick="window.app.togglePasswordVisibility('mainLoginPassword')">
+                <i data-lucide="eye" class="w-4 h-4" id="mainLoginPasswordEye"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between text-xs pt-1">
+            <label class="flex items-center gap-2 cursor-pointer text-muted">
+              <input type="checkbox" id="mainRememberMe" class="custom-checkbox" checked>
+              <span>Remember this device</span>
+            </label>
+            <a href="javascript:void(0)" class="text-indigo-400 hover:underline" onclick="window.app.fillQuickAuth('admin@vault.io', 'Admin@123')">Forgot password?</a>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-full py-3 font-bold text-sm shadow-lg shadow-indigo-500/20" id="mainLoginSubmitBtn">
+            <i data-lucide="log-in" class="w-4 h-4"></i> Sign In to VaultExpense
+          </button>
+        </form>
+
+        <!-- Main Sign Up Form -->
+        <form id="mainSignupForm" class="space-y-3.5 hidden">
+          <div class="form-group mb-0">
+            <label class="form-label" for="mainSignupName">Full Name</label>
+            <div class="relative">
+              <input type="text" class="form-input pl-9" id="mainSignupName" placeholder="e.g. Rahul Sharma" required>
+              <i data-lucide="user" class="w-4 h-4 text-muted absolute left-3 top-3"></i>
+            </div>
+          </div>
+
+          <div class="form-group mb-0">
+            <label class="form-label" for="mainSignupEmail">Email Address</label>
+            <div class="relative">
+              <input type="email" class="form-input pl-9" id="mainSignupEmail" placeholder="rahul@example.com" required>
+              <i data-lucide="mail" class="w-4 h-4 text-muted absolute left-3 top-3"></i>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div class="form-group mb-0">
+              <label class="form-label" for="mainSignupRole">Account Role</label>
+              <select class="form-select" id="mainSignupRole">
+                <option value="user">👤 Standard User</option>
+                <option value="admin">🛡️ Platform Admin</option>
+              </select>
+            </div>
+            <div class="form-group mb-0">
+              <label class="form-label" for="mainSignupCurrency">Currency</label>
+              <select class="form-select" id="mainSignupCurrency">
+                <option value="INR" selected>INR (₹)</option>
+                <option value="USD">USD ($)</option>
+                <option value="EUR">EUR (€)</option>
+                <option value="GBP">GBP (£)</option>
+                <option value="JPY">JPY (¥)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group mb-0">
+            <label class="form-label" for="mainSignupPassword">Password</label>
+            <div class="relative">
+              <input type="password" class="form-input pl-9 pr-10" id="mainSignupPassword" placeholder="Minimum 6 characters" required minlength="6">
+              <i data-lucide="lock" class="w-4 h-4 text-muted absolute left-3 top-3"></i>
+            </div>
+          </div>
+
+          <div class="text-xs text-muted flex items-start gap-2 pt-1">
+            <input type="checkbox" id="mainSignupTerms" class="custom-checkbox mt-0.5" required checked>
+            <span>I agree to the LocalStorage Data Security & SDC Project Terms.</span>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-full py-3 font-bold text-sm shadow-lg shadow-indigo-500/20 mt-1" id="mainSignupSubmitBtn">
+            <i data-lucide="user-plus" class="w-4 h-4"></i> Create Free Account
+          </button>
+        </form>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="app-container hidden">
     
     <!-- ==================== SIDEBAR ==================== -->
     <aside class="app-sidebar" id="appSidebar">
@@ -1158,6 +1367,22 @@
 
       <!-- Form 1: Login Form -->
       <form id="loginForm" class="p-6 space-y-4">
+        
+        <!-- Continue with Google Button -->
+        <button type="button" class="btn-google w-full py-2 px-3 rounded-xl flex items-center justify-center gap-2.5 transition font-medium text-xs" onclick="window.app.openGoogleAuthModal()">
+          <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+          </svg>
+          <span class="text-foreground font-semibold">Continue with Google</span>
+        </button>
+
+        <div class="auth-divider my-2">
+          <span>or sign in with email</span>
+        </div>
+
         <div class="form-group mb-0">
           <label class="form-label" for="loginEmail">Email Address</label>
           <input type="email" class="form-input" id="loginEmail" placeholder="e.g. demo@vault.io" required value="demo@vault.io">
@@ -1788,7 +2013,103 @@
         <!-- Scan Status & Results -->
         <div id="receiptScanStatus" class="hidden"></div>
         <div id="receiptScanResult" class="hidden"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="window.app.closeAllModals()">Close</button>
+      </div>
+    </div>
+  </div>
 
+  <!-- Modal: Google OAuth Account Picker -->
+  <div class="modal-backdrop" id="googleAuthModal">
+    <div class="modal-card max-w-md">
+      <div class="modal-header pb-3 border-b border-border/40">
+        <div class="flex items-center gap-3">
+          <svg class="w-6 h-6 flex-shrink-0" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+          </svg>
+          <div>
+            <h3 class="text-base font-bold text-foreground leading-tight">Sign in with Google</h3>
+            <p class="text-[11px] text-muted">Choose an account to continue to VaultExpense</p>
+          </div>
+        </div>
+        <button class="icon-btn-sm" onclick="window.app.closeAllModals()"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+      <div class="modal-body space-y-4 py-4">
+        <div class="space-y-2">
+          <!-- Google User Option 1: Demo User -->
+          <button type="button" class="w-full flex items-center gap-3 p-3 rounded-xl border border-border/60 hover:border-indigo-500 hover:bg-surface-elevated transition text-left group" onclick="window.app.loginWithGoogleAccount('Demo User', 'demo@vault.io', 'user')">
+            <div class="w-10 h-10 rounded-full bg-indigo-500/20 text-indigo-400 font-bold flex items-center justify-center text-sm border border-indigo-500/30">
+              DU
+            </div>
+            <div class="flex-1">
+              <div class="text-sm font-semibold text-foreground group-hover:text-indigo-400 transition flex items-center justify-between">
+                <span>Demo User</span>
+                <span class="badge badge-secondary text-[10px]">User</span>
+              </div>
+              <div class="text-xs text-muted">demo@vault.io</div>
+            </div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-muted group-hover:text-foreground"></i>
+          </button>
+
+          <!-- Google User Option 2: System Admin -->
+          <button type="button" class="w-full flex items-center gap-3 p-3 rounded-xl border border-border/60 hover:border-indigo-500 hover:bg-surface-elevated transition text-left group" onclick="window.app.loginWithGoogleAccount('System Admin', 'admin@vault.io', 'admin')">
+            <div class="w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-400 font-bold flex items-center justify-center text-sm border border-emerald-500/30">
+              SA
+            </div>
+            <div class="flex-1">
+              <div class="text-sm font-semibold text-foreground group-hover:text-emerald-400 transition flex items-center justify-between">
+                <span>System Administrator</span>
+                <span class="badge badge-primary text-[10px]">Admin</span>
+              </div>
+              <div class="text-xs text-muted">admin@vault.io</div>
+            </div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-muted group-hover:text-foreground"></i>
+          </button>
+        </div>
+
+        <div class="auth-divider my-2">
+          <span>or use custom Google account</span>
+        </div>
+
+        <!-- Custom Google Account Form -->
+        <form id="customGoogleForm" class="space-y-3" onsubmit="window.app.loginWithGoogleCustom(event)">
+          <div class="form-group mb-0">
+            <label class="form-label text-xs" for="googleCustomName">Google Name</label>
+            <input type="text" id="googleCustomName" class="form-input text-xs" placeholder="e.g. Alex Rivera" required>
+          </div>
+          <div class="form-group mb-0">
+            <label class="form-label text-xs" for="googleCustomEmail">Google Email</label>
+            <input type="email" id="googleCustomEmail" class="form-input text-xs" placeholder="alex@gmail.com" required>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div class="form-group mb-0">
+              <label class="form-label text-xs" for="googleCustomRole">Role</label>
+              <select id="googleCustomRole" class="form-select text-xs">
+                <option value="user">👤 User</option>
+                <option value="admin">🛡️ Admin</option>
+              </select>
+            </div>
+            <div class="form-group mb-0">
+              <label class="form-label text-xs" for="googleCustomCurrency">Currency</label>
+              <select id="googleCustomCurrency" class="form-select text-xs">
+                <option value="INR" selected>INR (₹)</option>
+                <option value="USD">USD ($)</option>
+                <option value="EUR">EUR (€)</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary w-full py-2 text-xs font-bold">
+            <i data-lucide="check" class="w-3.5 h-3.5"></i> Continue with Google OAuth
+          </button>
+        </form>
+
+        <p class="text-[11px] text-muted text-center leading-relaxed">
+          To continue, Google will share your name, email address, and profile preferences with VaultExpense.
+        </p>
       </div>
     </div>
   </div>

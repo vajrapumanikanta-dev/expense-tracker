@@ -1,6 +1,5 @@
-﻿// =========================================================================
-// VaultExpense - Unified Vanilla JavaScript Engine (No external build tools required)
-// Runs natively via file:/// and http:// protocols
+// =========================================================================
+// VaultExpense - Unified Vanilla JavaScript Engine
 // =========================================================================
 
 // ==================== SECTION: audio.js ====================
@@ -141,7 +140,6 @@ class AudioManager {
 
 const audio = new AudioManager();
 
-
 // ==================== SECTION: auth.js ====================
 /**
  * Authentication & Role-Based Access Control (RBAC) Module
@@ -207,7 +205,7 @@ const DEFAULT_USERS = [
 class AuthService {
   constructor() {
     this.users = this.loadUsers();
-    this.currentUser = this.loadSession();
+    this.currentUser = null; // Always show Login/Signup screen upon opening the webpage
     this.listeners = new Set();
   }
 
@@ -266,12 +264,6 @@ class AuthService {
       }
     } catch (e) {
       console.warn('Error reading session:', e);
-    }
-    // Default fallback: login as demo user on first visit if no session exists
-    const defaultUser = this.users.find(u => u.email === 'demo@vault.io') || this.users[1] || this.users[0];
-    if (defaultUser) {
-      this.saveSession(defaultUser);
-      return defaultUser;
     }
     return null;
   }
@@ -358,6 +350,43 @@ class AuthService {
     this.saveUsers();
     this.saveSession(newUser);
 
+    this.notify('signup_success', newUser);
+    return newUser;
+  }
+
+  // Log in or register with Google OAuth simulation
+  loginWithGoogle({ name = 'Google User', email, role = 'user', currency = 'INR' }) {
+    const cleanEmail = email.trim().toLowerCase();
+    let user = this.users.find(u => u.email.toLowerCase() === cleanEmail);
+
+    if (user) {
+      if (user.status === 'suspended') {
+        throw new Error('This account has been suspended by the platform administrator.');
+      }
+      user.lastLogin = new Date().toISOString();
+      this.saveUsers();
+      this.saveSession(user);
+      this.notify('login_success', user);
+      return user;
+    }
+
+    // Auto-create new user via Google
+    const newUser = {
+      id: `usr_g_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+      name: name,
+      email: cleanEmail,
+      password: 'GoogleOAuthVerified',
+      role: role === 'admin' ? 'admin' : 'user',
+      status: 'active',
+      currency: currency || 'INR',
+      createdAt: new Date().toISOString(),
+      lastLogin: new Date().toISOString(),
+      bio: 'Signed in via Google OAuth'
+    };
+
+    this.users.push(newUser);
+    this.saveUsers();
+    this.saveSession(newUser);
     this.notify('signup_success', newUser);
     return newUser;
   }
@@ -511,7 +540,6 @@ class AuthService {
 const auth = new AuthService();
 window.auth = auth;
 
-
 // ==================== SECTION: store.js ====================
 /**
  * Central State Store for Expense Tracker
@@ -527,10 +555,10 @@ const GLOBAL_CATEGORIES_KEY = 'vault_global_categories_v1';
 // Available currencies
 const CURRENCIES = {
   USD: { symbol: '$', name: 'US Dollar (USD)', locale: 'en-US', rate: 1.0 },
-  EUR: { symbol: 'â‚¬', name: 'Euro (EUR)', locale: 'de-DE', rate: 0.92 },
-  GBP: { symbol: 'Â£', name: 'British Pound (GBP)', locale: 'en-GB', rate: 0.79 },
-  INR: { symbol: 'â‚¹', name: 'Indian Rupee (INR)', locale: 'en-IN', rate: 83.5 },
-  JPY: { symbol: 'Â¥', name: 'Japanese Yen (JPY)', locale: 'ja-JP', rate: 155.0 },
+  EUR: { symbol: '€', name: 'Euro (EUR)', locale: 'de-DE', rate: 0.92 },
+  GBP: { symbol: '£', name: 'British Pound (GBP)', locale: 'en-GB', rate: 0.79 },
+  INR: { symbol: '₹', name: 'Indian Rupee (INR)', locale: 'en-IN', rate: 83.5 },
+  JPY: { symbol: '¥', name: 'Japanese Yen (JPY)', locale: 'ja-JP', rate: 155.0 },
   CAD: { symbol: 'CA$', name: 'Canadian Dollar (CAD)', locale: 'en-CA', rate: 1.37 },
   AUD: { symbol: 'AU$', name: 'Australian Dollar (AUD)', locale: 'en-AU', rate: 1.52 }
 };
@@ -579,7 +607,7 @@ function generateSeedData(currency = 'INR') {
       currency: currency,
       color: '#3B82F6',
       icon: 'landmark',
-      accountNumber: 'â€¢â€¢â€¢â€¢ 4821',
+      accountNumber: '•••• 4821',
       institution: 'HDFC Bank'
     },
     {
@@ -590,7 +618,7 @@ function generateSeedData(currency = 'INR') {
       currency: currency,
       color: '#10B981',
       icon: 'piggy-bank',
-      accountNumber: 'â€¢â€¢â€¢â€¢ 9104',
+      accountNumber: '•••• 9104',
       institution: 'State Bank of India'
     },
     {
@@ -602,7 +630,7 @@ function generateSeedData(currency = 'INR') {
       currency: currency,
       color: '#F43F5E',
       icon: 'credit-card',
-      accountNumber: 'â€¢â€¢â€¢â€¢ 6032',
+      accountNumber: '•••• 6032',
       institution: 'ICICI Bank'
     },
     {
@@ -1639,7 +1667,6 @@ class Store {
 const store = new Store();
 window.store = store;
 
-
 // ==================== SECTION: admin.js ====================
 /**
  * Admin Module Controller
@@ -1736,7 +1763,7 @@ class AdminManager {
           labels: months,
           datasets: [
             {
-              label: 'Platform Transaction Volume (â‚¹)',
+              label: 'Platform Transaction Volume (₹)',
               data: volumeData,
               borderColor: '#6366F1',
               backgroundColor: 'rgba(99, 102, 241, 0.12)',
@@ -1895,12 +1922,12 @@ class AdminManager {
           </td>
           <td class="py-3 px-4">
             <span class="badge ${user.role === 'admin' ? 'badge-primary' : 'badge-secondary'} text-xs font-semibold uppercase">
-              ${user.role === 'admin' ? 'ðŸ›¡ï¸ Admin' : 'ðŸ‘¤ User'}
+              ${user.role === 'admin' ? '🛡️ Admin' : '👤 User'}
             </span>
           </td>
           <td class="py-3 px-4">
             <span class="badge ${user.status === 'active' ? 'badge-emerald' : 'badge-rose'} text-xs font-semibold">
-              ${user.status === 'active' ? 'â— Active' : 'â— Suspended'}
+              ${user.status === 'active' ? '● Active' : '● Suspended'}
             </span>
           </td>
           <td class="py-3 px-4 text-xs text-muted font-mono">${user.currency || 'USD'}</td>
@@ -2223,7 +2250,6 @@ class AdminManager {
 const adminManager = new AdminManager();
 window.admin = adminManager;
 
-
 // ==================== SECTION: charts.js ====================
 /**
  * Chart.js Integration & Analytics Visualizations
@@ -2237,6 +2263,10 @@ class ChartManager {
     this.categoryDonutChart = null;
     this.budgetComparisonChart = null;
     this.dailyTrendChart = null;
+    this.analyticsBarChart = null;
+    this.analyticsLineChart = null;
+    this.analyticsDonutChart = null;
+    this.analyticsRange = '6m';
   }
 
   isDarkMode() {
@@ -2246,12 +2276,12 @@ class ChartManager {
   getChartColors() {
     const isDark = this.isDarkMode();
     return {
-      text: isDark ? '#94A3B8' : '#475569',
-      heading: isDark ? '#F1F5F9' : '#0F172A',
-      grid: isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)',
+      text: isDark ? '#CBD5E1' : '#475569',
+      heading: isDark ? '#FFFFFF' : '#0F172A',
+      grid: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)',
       tooltipBg: isDark ? 'rgba(15, 23, 42, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-      tooltipText: isDark ? '#F8FAFC' : '#0F172A',
-      tooltipBorder: isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.1)',
+      tooltipText: isDark ? '#FFFFFF' : '#0F172A',
+      tooltipBorder: isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)',
       income: '#10B981',
       incomeLight: 'rgba(16, 185, 129, 0.2)',
       expense: '#F43F5E',
@@ -2266,6 +2296,11 @@ class ChartManager {
     this.renderCategoryDonut();
     this.renderBudgetComparison();
     this.renderDailyTrend();
+    this.renderAnalyticsBarChart();
+    this.renderAnalyticsLineChart();
+    this.renderAnalyticsDonutChart();
+    this.renderAnalyticsCategoryTable();
+    this.setupAnalyticsControls();
   }
 
   // --- 1. Cashflow Chart (Income vs Expense 6-Month or Last 30 Days) ---
@@ -2372,7 +2407,7 @@ class ChartManager {
             ticks: {
               color: colors.text,
               font: { family: 'Inter', size: 11 },
-              callback: (val) => `${store.getState().preferences.currency === 'INR' ? 'â‚¹' : '$'}${val >= 1000 ? (val / 1000) + 'k' : val}`
+              callback: (val) => `${store.getState().preferences.currency === 'INR' ? '₹' : '$'}${val >= 1000 ? (val / 1000) + 'k' : val}`
             }
           }
         }
@@ -2641,10 +2676,425 @@ class ChartManager {
       }
     });
   }
+
+  // --- 5. Financial Analytics: Bar Chart (Income vs Spending) ---
+  renderAnalyticsBarChart(rangeMonths = (this.analyticsRange === '1y' ? 12 : 6)) {
+    const canvas = document.getElementById('analyticsBarChartCanvas');
+    if (!canvas || typeof Chart === 'undefined') return;
+
+    const colors = this.getChartColors();
+    const state = store.getState();
+    const transactions = state.transactions || [];
+
+    const months = [];
+    const incomeData = [];
+    const expenseData = [];
+    const now = new Date();
+
+    for (let i = rangeMonths - 1; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthLabel = d.toLocaleString('default', { month: 'short' });
+      months.push(monthLabel);
+
+      let mIncome = 0;
+      let mExpense = 0;
+
+      transactions.forEach(tx => {
+        const txDate = new Date(tx.date);
+        if (txDate.getFullYear() === d.getFullYear() && txDate.getMonth() === d.getMonth()) {
+          if (tx.type === 'income') mIncome += (Number(tx.amount) || 0);
+          if (tx.type === 'expense') mExpense += (Number(tx.amount) || 0);
+        }
+      });
+
+      incomeData.push(mIncome);
+      expenseData.push(mExpense);
+    }
+
+    if (this.analyticsBarChart) {
+      this.analyticsBarChart.destroy();
+    }
+
+    const ctx = canvas.getContext('2d');
+    this.analyticsBarChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: months,
+        datasets: [
+          {
+            label: 'Income',
+            data: incomeData,
+            backgroundColor: colors.income,
+            borderRadius: 6,
+            borderSkipped: false,
+            barPercentage: 0.65,
+            categoryPercentage: 0.65
+          },
+          {
+            label: 'Spending',
+            data: expenseData,
+            backgroundColor: colors.expense,
+            borderRadius: 6,
+            borderSkipped: false,
+            barPercentage: 0.65,
+            categoryPercentage: 0.65
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'top',
+            align: 'end',
+            labels: {
+              color: colors.text,
+              font: { family: 'Inter', size: 12, weight: '600' },
+              usePointStyle: true,
+              pointStyle: 'circle',
+              padding: 14
+            }
+          },
+          tooltip: {
+            backgroundColor: colors.tooltipBg,
+            titleColor: colors.tooltipText,
+            bodyColor: colors.tooltipText,
+            borderColor: colors.tooltipBorder,
+            borderWidth: 1,
+            padding: 12,
+            boxPadding: 6,
+            usePointStyle: true,
+            callbacks: {
+              label: (context) => ` ${context.dataset.label}: ${store.formatCurrency(context.parsed.y)}`
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: { color: colors.text, font: { family: 'Inter', size: 12 } }
+          },
+          y: {
+            grid: { color: colors.grid },
+            ticks: {
+              color: colors.text,
+              font: { family: 'Inter', size: 11 },
+              callback: (val) => `${store.getState().preferences.currency === 'INR' ? '₹' : '$'}${val >= 1000 ? (val / 1000) + 'k' : val}`
+            }
+          }
+        }
+      }
+    });
+  }
+
+  // --- 6. Financial Analytics: Net Wealth & Cumulative Savings Trajectory ---
+  renderAnalyticsLineChart(rangeMonths = (this.analyticsRange === '1y' ? 12 : 6)) {
+    const canvas = document.getElementById('analyticsLineChartCanvas');
+    if (!canvas || typeof Chart === 'undefined') return;
+
+    const colors = this.getChartColors();
+    const state = store.getState();
+    const transactions = state.transactions || [];
+    const now = new Date();
+
+    const months = [];
+    const trajectoryData = [];
+    let runningNet = 0;
+
+    for (let i = rangeMonths - 1; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthLabel = d.toLocaleString('default', { month: 'short' });
+      months.push(monthLabel);
+
+      let mIncome = 0;
+      let mExpense = 0;
+
+      transactions.forEach(tx => {
+        const txDate = new Date(tx.date);
+        if (txDate.getFullYear() === d.getFullYear() && txDate.getMonth() === d.getMonth()) {
+          if (tx.type === 'income') mIncome += (Number(tx.amount) || 0);
+          if (tx.type === 'expense') mExpense += (Number(tx.amount) || 0);
+        }
+      });
+
+      runningNet += (mIncome - mExpense);
+      trajectoryData.push(runningNet);
+    }
+
+    if (this.analyticsLineChart) {
+      this.analyticsLineChart.destroy();
+    }
+
+    const ctx = canvas.getContext('2d');
+    const gradient = ctx.createLinearGradient(0, 0, 0, 240);
+    gradient.addColorStop(0, 'rgba(16, 185, 129, 0.35)');
+    gradient.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+
+    this.analyticsLineChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: months,
+        datasets: [
+          {
+            label: 'Cumulative Net Savings',
+            data: trajectoryData,
+            borderColor: '#10B981',
+            backgroundColor: gradient,
+            borderWidth: 3,
+            fill: true,
+            tension: 0.35,
+            pointBackgroundColor: '#10B981',
+            pointBorderColor: '#FFFFFF',
+            pointBorderWidth: 2,
+            pointRadius: 5,
+            pointHoverRadius: 7
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'top',
+            align: 'end',
+            labels: {
+              color: colors.text,
+              font: { family: 'Inter', size: 12, weight: '600' },
+              usePointStyle: true,
+              pointStyle: 'circle'
+            }
+          },
+          tooltip: {
+            backgroundColor: colors.tooltipBg,
+            titleColor: colors.tooltipText,
+            bodyColor: colors.tooltipText,
+            borderColor: colors.tooltipBorder,
+            borderWidth: 1,
+            padding: 12,
+            callbacks: {
+              label: (context) => ` Cumulative Savings: ${store.formatCurrency(context.parsed.y)}`
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: { color: colors.text, font: { family: 'Inter', size: 12 } }
+          },
+          y: {
+            grid: { color: colors.grid },
+            ticks: {
+              color: colors.text,
+              font: { family: 'Inter', size: 11 },
+              callback: (val) => `${store.getState().preferences.currency === 'INR' ? '₹' : '$'}${val >= 1000 ? (val / 1000) + 'k' : val}`
+            }
+          }
+        }
+      }
+    });
+  }
+
+  // --- 7. Financial Analytics: Expense Share by Category Donut ---
+  renderAnalyticsDonutChart() {
+    const canvas = document.getElementById('analyticsDonutCanvas');
+    if (!canvas || typeof Chart === 'undefined') return;
+
+    const colors = this.getChartColors();
+    const stats = store.getCurrentMonthStats();
+    const spendMap = stats.categorySpendMap || {};
+
+    const labels = [];
+    const data = [];
+    const bgColors = [];
+
+    Object.entries(spendMap).forEach(([catId, amount]) => {
+      if (amount > 0) {
+        const cat = store.getCategoryById(catId);
+        labels.push(cat.name);
+        data.push(amount);
+        bgColors.push(cat.color || '#6366F1');
+      }
+    });
+
+    if (data.length === 0) {
+      labels.push('No Expenses');
+      data.push(1);
+      bgColors.push(colors.grid);
+    }
+
+    if (this.analyticsDonutChart) {
+      this.analyticsDonutChart.destroy();
+    }
+
+    const ctx = canvas.getContext('2d');
+    this.analyticsDonutChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            data: data,
+            backgroundColor: bgColors,
+            borderColor: this.isDarkMode() ? '#1E293B' : '#FFFFFF',
+            borderWidth: 3,
+            hoverOffset: 6,
+            cutout: '70%'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: colors.text,
+              font: { family: 'Inter', size: 11 },
+              usePointStyle: true,
+              pointStyle: 'circle',
+              padding: 10
+            }
+          },
+          tooltip: {
+            backgroundColor: colors.tooltipBg,
+            titleColor: colors.tooltipText,
+            bodyColor: colors.tooltipText,
+            borderColor: colors.tooltipBorder,
+            borderWidth: 1,
+            padding: 10,
+            callbacks: {
+              label: (context) => {
+                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                const val = context.parsed;
+                const pct = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
+                return ` ${context.label}: ${store.formatCurrency(val)} (${pct}%)`;
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  // --- 8. Financial Analytics: Category Spend Velocity & Burn Rates Table ---
+  renderAnalyticsCategoryTable() {
+    const tbody = document.getElementById('analyticsCategoryTableBody');
+    if (!tbody) return;
+
+    const state = store.getState();
+    const stats = store.getCurrentMonthStats();
+    const spendMap = stats.categorySpendMap || {};
+    const totalExpenses = stats.totalExpenses || 1;
+
+    // Count transactions per category in current month
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+    const txCountMap = {};
+
+    (state.transactions || []).forEach(tx => {
+      const d = new Date(tx.date);
+      if (d.getFullYear() === currentYear && d.getMonth() === currentMonth && tx.type === 'expense') {
+        txCountMap[tx.categoryId] = (txCountMap[tx.categoryId] || 0) + 1;
+      }
+    });
+
+    const entries = Object.entries(spendMap)
+      .filter(([_, amount]) => amount > 0)
+      .sort((a, b) => b[1] - a[1]);
+
+    if (entries.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="5" class="py-8 text-center text-muted">
+            <div class="flex flex-col items-center justify-center gap-2">
+              <span class="text-2xl">📊</span>
+              <span class="text-sm font-medium">No expense records found for this period.</span>
+            </div>
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    tbody.innerHTML = entries.map(([catId, amount]) => {
+      const cat = store.getCategoryById(catId);
+      const pct = ((amount / totalExpenses) * 100).toFixed(1);
+      const count = txCountMap[catId] || 1;
+      const avg = Math.round(amount / count);
+
+      return `
+        <tr class="border-b border-border/40 hover:bg-surface-elevated/40 transition">
+          <td class="py-3 px-2">
+            <div class="flex items-center gap-2.5">
+              <div class="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold text-white shadow-sm" style="background-color: ${cat.color || '#6366F1'};">
+                <i data-lucide="${cat.icon || 'tag'}" class="w-3.5 h-3.5"></i>
+              </div>
+              <div>
+                <div class="font-bold text-foreground text-xs">${cat.name}</div>
+                <div class="text-[10px] text-muted capitalize">${cat.type}</div>
+              </div>
+            </div>
+          </td>
+          <td class="py-3 font-mono font-bold text-foreground text-xs">
+            ${store.formatCurrency(amount)}
+          </td>
+          <td class="py-3">
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-[11px] font-semibold text-muted w-10">${pct}%</span>
+              <div class="flex-1 max-w-[100px] h-1.5 bg-surface-elevated rounded-full overflow-hidden">
+                <div class="h-full rounded-full" style="width: ${pct}%; background-color: ${cat.color || '#6366F1'};"></div>
+              </div>
+            </div>
+          </td>
+          <td class="py-3 text-muted text-xs font-medium">
+            <span class="badge badge-secondary text-[10px]">${count} txs</span>
+          </td>
+          <td class="py-3 text-right font-mono text-xs font-semibold text-foreground">
+            ${store.formatCurrency(avg)}
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  // --- 9. Setup Analytics Range Toggle Controls ---
+  setupAnalyticsControls() {
+    const btn6M = document.getElementById('analyticsRange6M');
+    const btn1Y = document.getElementById('analyticsRange1Y');
+
+    if (btn6M && !btn6M._listenerAttached) {
+      btn6M._listenerAttached = true;
+      btn6M.addEventListener('click', () => {
+        this.analyticsRange = '6m';
+        btn6M.classList.add('active');
+        if (btn1Y) btn1Y.classList.remove('active');
+        this.renderAnalyticsBarChart(6);
+        this.renderAnalyticsLineChart(6);
+        if (window.audio) window.audio.playClick?.();
+      });
+    }
+
+    if (btn1Y && !btn1Y._listenerAttached) {
+      btn1Y._listenerAttached = true;
+      btn1Y.addEventListener('click', () => {
+        this.analyticsRange = '1y';
+        btn1Y.classList.add('active');
+        if (btn6M) btn6M.classList.remove('active');
+        this.renderAnalyticsBarChart(12);
+        this.renderAnalyticsLineChart(12);
+        if (window.audio) window.audio.playClick?.();
+      });
+    }
+  }
 }
 
 const chartManager = new ChartManager();
-
 
 // ==================== SECTION: transactions.js ====================
 /**
@@ -2793,13 +3243,15 @@ class TransactionsManager {
   }
 
   renderBatchBar() {
-    const batchBar = document.getElementById('txBatchActionBar');
-    const batchCount = document.getElementById('txBatchSelectedCount');
-    if (!batchBar || !batchCount) return;
+    const batchBar = document.getElementById('txBatchActionBar') || document.getElementById('txBatchDeleteBtn');
+    const batchCount = document.getElementById('txBatchSelectedCount') || document.getElementById('txBatchCount');
+    if (!batchBar) return;
 
     if (this.selectedIds.size > 0) {
       batchBar.classList.remove('hidden');
-      batchCount.textContent = `${this.selectedIds.size} selected`;
+      if (batchCount) {
+        batchCount.textContent = batchCount.id === 'txBatchCount' ? `Delete (${this.selectedIds.size})` : `${this.selectedIds.size} selected`;
+      }
     } else {
       batchBar.classList.add('hidden');
     }
@@ -2814,6 +3266,10 @@ class TransactionsManager {
       window.app.showToast('Selected transactions deleted', 'success');
       this.render();
     }
+  }
+
+  deleteSelected() {
+    this.deleteBatchSelected();
   }
 
   render() {
@@ -2846,7 +3302,7 @@ class TransactionsManager {
       const account = store.getAccountById(tx.accountId);
       const isIncome = tx.type === 'income';
       const isTransfer = tx.type === 'transfer';
-      const sign = isIncome ? '+' : (isTransfer ? 'â‡„' : '-');
+      const sign = isIncome ? '+' : (isTransfer ? '⇄' : '-');
       const amountClass = isIncome ? 'text-emerald-500' : (isTransfer ? 'text-indigo-400' : 'text-rose-500');
 
       html += `
@@ -2862,9 +3318,9 @@ class TransactionsManager {
               </div>
               <div class="text-xs text-muted flex items-center gap-2 mt-0.5">
                 <span>${category.name}</span>
-                <span>â€¢</span>
+                <span>•</span>
                 <span>${account.name}</span>
-                <span>â€¢</span>
+                <span>•</span>
                 <span>${tx.date}</span>
               </div>
             </div>
@@ -2885,7 +3341,7 @@ class TransactionsManager {
   // Full table for the Transactions Ledger page
   renderFullLedger() {
     const tbody = document.getElementById('txTableBody');
-    const countLabel = document.getElementById('txFilteredCount');
+    const countLabel = document.getElementById('txFilteredCount') || document.getElementById('txCountInfo');
     const paginationEl = document.getElementById('txPagination');
     if (!tbody) return;
 
@@ -2928,7 +3384,7 @@ class TransactionsManager {
       const isSelected = this.selectedIds.has(tx.id);
       const isIncome = tx.type === 'income';
       const isTransfer = tx.type === 'transfer';
-      const sign = isIncome ? '+' : (isTransfer ? 'â‡„ ' : '-');
+      const sign = isIncome ? '+' : (isTransfer ? '⇄ ' : '-');
       const amountClass = isIncome ? 'text-emerald-500 font-semibold' : (isTransfer ? 'text-indigo-400 font-semibold' : 'text-rose-500 font-semibold');
 
       html += `
@@ -2960,7 +3416,7 @@ class TransactionsManager {
             <div class="flex items-center gap-1.5">
               <i data-lucide="${acc.icon || 'landmark'}" class="w-4 h-4 text-muted"></i>
               <span>${acc.name.split('(')[0]}</span>
-              ${toAcc ? `<span class="text-xs text-indigo-400">â†’ ${toAcc.name.split('(')[0]}</span>` : ''}
+              ${toAcc ? `<span class="text-xs text-indigo-400">→ ${toAcc.name.split('(')[0]}</span>` : ''}
             </div>
           </td>
           <td class="px-4 py-3 text-right whitespace-nowrap text-sm ${amountClass}">
@@ -3024,19 +3480,25 @@ class TransactionsManager {
       audio.playDelete();
       window.app.showToast('Transaction deleted', 'info');
       this.render();
+      window.app.refreshActiveViews();
     }
   }
 
+  delete(id) {
+    this.deleteTx(id);
+  }
+
+  deleteSelected() {
+    this.deleteBatchSelected();
+  }
+
   openEditModal(id) {
-    const tx = store.getState().transactions.find(t => t.id === id);
-    if (!tx) return;
-    window.app.openTransactionModal(tx);
+    window.app.openTransactionModal(id);
   }
 }
 
 const txManager = new TransactionsManager();
 window.txManager = txManager;
-
 
 // ==================== SECTION: budgets.js ====================
 /**
@@ -3196,65 +3658,33 @@ class BudgetManager {
 
   // Full Budgets Page
   renderBudgetsPage() {
-    const cardsGrid = document.getElementById('budgetCardsGrid');
-    const summaryCards = document.getElementById('budgetSummaryCards');
-    if (!cardsGrid) return;
+    const cardsGrid = document.getElementById('budgetsGridContainer') || document.getElementById('budgetCardsGrid');
+    const summaryBanner = document.getElementById('overallBudgetBanner') || document.getElementById('budgetSummaryCards');
 
     const data = this.calculateBudgetsData();
     const { overall, categoryBudgets } = data;
 
-    // Summary Top Cards
-    if (summaryCards) {
-      summaryCards.innerHTML = `
-        <div class="stat-card">
-          <div class="stat-card-icon bg-indigo-500/15 text-indigo-400">
-            <i data-lucide="wallet" class="w-5 h-5"></i>
+    // Overall Progress Banner
+    if (summaryBanner) {
+      summaryBanner.innerHTML = `
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-2">
+            <span class="text-sm font-bold text-foreground">Monthly Budget Allocation</span>
+            <span class="badge ${overall.isOver ? 'badge-rose' : (overall.percentage >= 80 ? 'badge-amber' : 'badge-emerald')} text-xs">${overall.percentage}% Spent</span>
           </div>
-          <div>
-            <div class="text-xs font-medium text-muted">Total Monthly Budget</div>
-            <div class="text-xl font-bold text-foreground mt-0.5">${store.formatCurrency(overall.limit)}</div>
-            <div class="text-xs text-muted mt-1">${categoryBudgets.length} Active Categories</div>
-          </div>
+          <span class="text-xs font-mono text-muted">${store.formatCurrency(overall.spent)} of ${store.formatCurrency(overall.limit)}</span>
         </div>
-
-        <div class="stat-card">
-          <div class="stat-card-icon ${overall.isOver ? 'bg-rose-500/15 text-rose-400' : 'bg-emerald-500/15 text-emerald-400'}">
-            <i data-lucide="pie-chart" class="w-5 h-5"></i>
-          </div>
-          <div>
-            <div class="text-xs font-medium text-muted">Total Month Spent</div>
-            <div class="text-xl font-bold text-foreground mt-0.5">${store.formatCurrency(overall.spent)}</div>
-            <div class="text-xs ${overall.isOver ? 'text-rose-400' : 'text-emerald-400'} font-medium mt-1">
-              ${overall.percentage}% of allocated budget
-            </div>
-          </div>
+        <div class="progress-bar-bg h-3.5 mb-2">
+          <div class="progress-bar-fill transition-all duration-700" style="width: ${Math.min(100, overall.percentage)}%; background-color: ${overall.isOver ? '#F43F5E' : (overall.percentage >= 80 ? '#F59E0B' : '#10B981')}"></div>
         </div>
-
-        <div class="stat-card">
-          <div class="stat-card-icon bg-amber-500/15 text-amber-400">
-            <i data-lucide="trending-up" class="w-5 h-5"></i>
-          </div>
-          <div>
-            <div class="text-xs font-medium text-muted">Projected Month-End</div>
-            <div class="text-xl font-bold text-foreground mt-0.5">${store.formatCurrency(overall.projected)}</div>
-            <div class="text-xs text-muted mt-1">Based on daily velocity</div>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-card-icon ${overall.remaining >= 0 ? 'bg-emerald-500/15 text-emerald-400' : 'bg-rose-500/15 text-rose-400'}">
-            <i data-lucide="${overall.remaining >= 0 ? 'shield-check' : 'alert-triangle'}" class="w-5 h-5"></i>
-          </div>
-          <div>
-            <div class="text-xs font-medium text-muted">${overall.remaining >= 0 ? 'Remaining Cushion' : 'Over Limit By'}</div>
-            <div class="text-xl font-bold ${overall.remaining >= 0 ? 'text-emerald-400' : 'text-rose-400'} mt-0.5">
-              ${store.formatCurrency(Math.abs(overall.remaining))}
-            </div>
-            <div class="text-xs text-muted mt-1">${overall.daysRemaining} days left</div>
-          </div>
+        <div class="flex justify-between text-xs text-muted">
+          <span>${overall.remaining >= 0 ? `${store.formatCurrency(overall.remaining)} cushion remaining` : `${store.formatCurrency(Math.abs(overall.remaining))} over limit!`}</span>
+          <span>${overall.daysRemaining} days remaining in month</span>
         </div>
       `;
     }
+
+    if (!cardsGrid) return;
 
     if (categoryBudgets.length === 0) {
       cardsGrid.innerHTML = `
@@ -3349,13 +3779,30 @@ class BudgetManager {
       audio.playDelete();
       window.app.showToast('Budget removed', 'info');
       this.render();
+      window.app.refreshActiveViews();
     }
+  }
+
+  handleSubmit() {
+    const categoryId = document.getElementById('budgetCategorySelect')?.value;
+    const limit = parseFloat(document.getElementById('budgetLimitInput')?.value);
+    const threshold = parseInt(document.getElementById('budgetThresholdInput')?.value) || 80;
+
+    if (!categoryId || !limit || limit <= 0) {
+      window.app.showToast('Please enter a valid monthly limit', 'danger');
+      return;
+    }
+
+    store.setBudget(categoryId, limit, threshold);
+    audio.playSuccess();
+    window.app.showToast('Budget saved successfully', 'success');
+    window.app.closeAllModals();
+    window.app.refreshActiveViews();
   }
 }
 
 const budgetManager = new BudgetManager();
 window.budgetManager = budgetManager;
-
 
 // ==================== SECTION: accounts.js ====================
 /**
@@ -3413,73 +3860,31 @@ class AccountsManager {
 
   // Full Accounts Page
   renderAccountsPage() {
-    const grid = document.getElementById('accountsGrid');
-    const summaryStats = document.getElementById('accountsSummaryStats');
+    const grid = document.getElementById('accountsGridContainer') || document.getElementById('accountsGrid');
+    const totalNwEl = document.getElementById('accountsTotalNetWorth');
+    const netWorth = store.getNetWorth();
+
+    if (totalNwEl) {
+      totalNwEl.textContent = store.formatCurrency(netWorth);
+    }
+
     if (!grid) return;
 
     const accounts = store.getState().accounts;
-    const netWorth = store.getNetWorth();
 
-    let totalLiquidAssets = 0;
-    let totalInvestments = 0;
-    let totalLiabilities = 0;
-
-    accounts.forEach(acc => {
-      if (acc.type === 'credit') {
-        if (acc.balance < 0) totalLiabilities += Math.abs(acc.balance);
-      } else if (acc.type === 'investment') {
-        totalInvestments += Math.max(0, acc.balance);
-      } else {
-        totalLiquidAssets += Math.max(0, acc.balance);
-      }
-    });
-
-    if (summaryStats) {
-      summaryStats.innerHTML = `
-        <div class="stat-card">
-          <div class="stat-card-icon bg-emerald-500/15 text-emerald-400">
-            <i data-lucide="shield-check" class="w-5 h-5"></i>
-          </div>
-          <div>
-            <div class="text-xs font-medium text-muted">Total Net Worth</div>
-            <div class="text-xl font-bold text-foreground mt-0.5">${store.formatCurrency(netWorth)}</div>
-            <div class="text-xs text-emerald-400 font-medium mt-1">Across ${accounts.length} linked accounts</div>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-card-icon bg-blue-500/15 text-blue-400">
-            <i data-lucide="droplet" class="w-5 h-5"></i>
-          </div>
-          <div>
-            <div class="text-xs font-medium text-muted">Liquid Cash & Checking</div>
-            <div class="text-xl font-bold text-foreground mt-0.5">${store.formatCurrency(totalLiquidAssets)}</div>
-            <div class="text-xs text-muted mt-1">Immediately accessible</div>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-card-icon bg-purple-500/15 text-purple-400">
-            <i data-lucide="trending-up" class="w-5 h-5"></i>
-          </div>
-          <div>
-            <div class="text-xs font-medium text-muted">Investments & Crypto</div>
-            <div class="text-xl font-bold text-foreground mt-0.5">${store.formatCurrency(totalInvestments)}</div>
-            <div class="text-xs text-muted mt-1">Long-term growth</div>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-card-icon bg-rose-500/15 text-rose-400">
-            <i data-lucide="credit-card" class="w-5 h-5"></i>
-          </div>
-          <div>
-            <div class="text-xs font-medium text-muted">Total Credit Card Debt</div>
-            <div class="text-xl font-bold text-rose-400 mt-0.5">${store.formatCurrency(totalLiabilities)}</div>
-            <div class="text-xs text-muted mt-1">Current unpaid balance</div>
-          </div>
+    if (accounts.length === 0) {
+      grid.innerHTML = `
+        <div class="col-span-full text-center py-12 empty-state">
+          <i data-lucide="landmark" class="w-12 h-12 text-muted mx-auto mb-3 opacity-40"></i>
+          <h3 class="text-base font-semibold text-foreground">No financial accounts created</h3>
+          <p class="text-sm text-muted mt-1">Add your bank checking, savings, credit cards, or cash wallet.</p>
+          <button class="btn btn-primary btn-sm mt-4" onclick="window.app.openAccountModal()">
+            <i data-lucide="plus" class="w-4 h-4 mr-1"></i> Add Financial Account
+          </button>
         </div>
       `;
+      if (window.lucide) window.lucide.createIcons();
+      return;
     }
 
     let cardsHtml = '';
@@ -3531,16 +3936,15 @@ class AccountsManager {
               ${store.formatCurrency(acc.balance)}
             </div>
             <div class="text-xs text-muted mt-1 flex items-center gap-2">
-              <span>${acc.institution || ''}</span>
-              <span>â€¢</span>
-              <span class="font-mono">${acc.accountNumber || ''}</span>
+              <span>${acc.institution || 'Bank'}</span>
+              ${acc.accountNumber ? `<span>•</span><span class="font-mono">${acc.accountNumber}</span>` : ''}
             </div>
           </div>
 
           ${creditUtilizationHtml}
 
           <div class="flex items-center justify-between pt-4 mt-4 border-t border-border/40">
-            <button class="btn btn-secondary btn-xs" onclick="window.app.openTransferModal('${acc.id}')">
+            <button class="btn btn-secondary btn-xs" onclick="window.app.openTransferModal()">
               <i data-lucide="arrow-left-right" class="w-3.5 h-3.5 mr-1"></i> Transfer
             </button>
             <div class="flex items-center gap-1">
@@ -3566,13 +3970,40 @@ class AccountsManager {
       audio.playDelete();
       window.app.showToast('Account deleted', 'info');
       this.render();
+      window.app.refreshActiveViews();
     }
+  }
+
+  handleSubmit() {
+    const id = document.getElementById('accountFormId')?.value;
+    const name = document.getElementById('accFormName')?.value.trim();
+    const type = document.getElementById('accFormType')?.value;
+    const balance = parseFloat(document.getElementById('accFormBalance')?.value) || 0;
+    const institution = document.getElementById('accFormInstitution')?.value.trim();
+    const accountNumber = document.getElementById('accFormNumber')?.value.trim();
+    const limit = parseFloat(document.getElementById('accFormLimit')?.value) || 0;
+
+    if (!name) {
+      window.app.showToast('Please enter an account name', 'danger');
+      return;
+    }
+
+    const accData = { name, type, balance, institution, accountNumber, limit };
+    if (id) {
+      store.updateAccount(id, accData);
+      window.app.showToast('Account updated successfully', 'success');
+    } else {
+      store.addAccount(accData);
+      window.app.showToast('Account added successfully', 'success');
+    }
+    audio.playSuccess();
+    window.app.closeAllModals();
+    window.app.refreshActiveViews();
   }
 }
 
 const accountsManager = new AccountsManager();
 window.accountsManager = accountsManager;
-
 
 // ==================== SECTION: recurring.js ====================
 /**
@@ -3663,9 +4094,11 @@ class RecurringManager {
 
   // Full Recurring Page
   renderRecurringPage() {
-    const listContainer = document.getElementById('recurringBillsList');
+    const listContainer = document.getElementById('recurringGridContainer') || document.getElementById('recurringBillsList');
+    const monthlyTotalEl = document.getElementById('recMonthlyTotal');
+    const activeCountEl = document.getElementById('recActiveCount');
+    const nextUpcomingEl = document.getElementById('recNextUpcomingText');
     const summaryEl = document.getElementById('recurringSummaryStats');
-    if (!listContainer) return;
 
     const bills = store.getState().recurringBills;
     let totalMonthlyCost = 0;
@@ -3679,6 +4112,24 @@ class RecurringManager {
         else totalMonthlyCost += b.amount;
       }
     });
+
+    if (monthlyTotalEl) monthlyTotalEl.textContent = store.formatCurrency(totalMonthlyCost);
+    if (activeCountEl) activeCountEl.textContent = `${activeCount} Subscriptions`;
+
+    const sortedBills = [...bills].sort((a, b) => {
+      const statA = this.getDueStatus(a.nextDueDate);
+      const statB = this.getDueStatus(b.nextDueDate);
+      return statA.daysDiff - statB.daysDiff;
+    });
+
+    if (nextUpcomingEl) {
+      if (sortedBills.length > 0) {
+        const nextBill = sortedBills[0];
+        nextUpcomingEl.textContent = `${nextBill.name} (${nextBill.nextDueDate || 'Soon'})`;
+      } else {
+        nextUpcomingEl.textContent = 'None Due Soon';
+      }
+    }
 
     if (summaryEl) {
       summaryEl.innerHTML = `
@@ -3706,9 +4157,11 @@ class RecurringManager {
       `;
     }
 
+    if (!listContainer) return;
+
     if (bills.length === 0) {
       listContainer.innerHTML = `
-        <div class="text-center py-12 empty-state">
+        <div class="col-span-full text-center py-12 empty-state">
           <i data-lucide="repeat" class="w-12 h-12 text-muted mx-auto mb-3 opacity-40"></i>
           <h3 class="text-base font-semibold text-foreground">No recurring subscriptions added</h3>
           <p class="text-sm text-muted mt-1">Keep track of your monthly Netflix, Rent, Gym, and SaaS subscriptions.</p>
@@ -3721,13 +4174,6 @@ class RecurringManager {
       return;
     }
 
-    // Sort by due date
-    const sortedBills = [...bills].sort((a, b) => {
-      const statA = this.getDueStatus(a.nextDueDate);
-      const statB = this.getDueStatus(b.nextDueDate);
-      return statA.daysDiff - statB.daysDiff;
-    });
-
     let html = '';
     sortedBills.forEach(b => {
       const cat = store.getCategoryById(b.categoryId);
@@ -3735,37 +4181,38 @@ class RecurringManager {
       const status = this.getDueStatus(b.nextDueDate);
 
       html += `
-        <div class="recurring-item-card p-4 rounded-2xl bg-surface border border-border hover:border-primary/40 transition flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div class="flex items-center gap-3.5">
-            <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style="background-color: ${cat.color}20; color: ${cat.color}">
-              <i data-lucide="${cat.icon || 'repeat'}" class="w-6 h-6"></i>
-            </div>
-            <div>
-              <div class="flex items-center gap-2">
-                <h4 class="font-semibold text-foreground text-base">${b.name}</h4>
-                <span class="badge ${status.class} text-xs font-semibold">${status.label}</span>
-                ${!b.active ? `<span class="badge badge-secondary text-xs">Paused</span>` : ''}
+        <div class="recurring-item-card p-5 rounded-2xl bg-surface border border-border hover:border-primary/40 transition flex flex-col justify-between">
+          <div>
+            <div class="flex items-start justify-between mb-3">
+              <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style="background-color: ${cat.color}20; color: ${cat.color}">
+                  <i data-lucide="${cat.icon || 'repeat'}" class="w-6 h-6"></i>
+                </div>
+                <div>
+                  <h4 class="font-bold text-foreground text-base">${b.name}</h4>
+                  <div class="text-xs text-muted mt-0.5">${b.frequency.toUpperCase()} • Debits from ${acc.name}</div>
+                </div>
               </div>
-              <div class="text-xs text-muted flex items-center gap-2 mt-1">
-                <span>${b.frequency.toUpperCase()}</span>
-                <span>â€¢</span>
-                <span>Next: <strong>${b.nextDueDate || 'N/A'}</strong></span>
-                <span>â€¢</span>
-                <span>Debits from: ${acc.name}</span>
+              <span class="badge ${status.class} text-xs font-semibold">${status.label}</span>
+            </div>
+
+            <div class="my-3 p-3 rounded-xl bg-surface-elevated border border-border/40 flex justify-between items-center">
+              <div>
+                <span class="text-xs text-muted block">Subscription Amount</span>
+                <span class="text-xl font-bold text-foreground">${store.formatCurrency(b.amount)}</span>
+              </div>
+              <div class="text-right">
+                <span class="text-xs text-muted block">Next Due Date</span>
+                <span class="text-xs font-bold text-foreground font-mono">${b.nextDueDate || 'N/A'}</span>
               </div>
             </div>
           </div>
 
-          <div class="flex items-center justify-between md:justify-end gap-4">
-            <div class="text-right">
-              <div class="text-lg font-bold text-foreground">${store.formatCurrency(b.amount)}</div>
-              <div class="text-xs text-muted">${b.provider || cat.name}</div>
-            </div>
-
-            <div class="flex items-center gap-2">
-              <button class="btn btn-primary btn-sm" title="Mark as Paid & Record Expense" onclick="window.recurringManager.payBill('${b.id}')">
-                <i data-lucide="check-circle" class="w-4 h-4 mr-1"></i> Pay & Log
-              </button>
+          <div class="flex items-center justify-between pt-3 mt-2 border-t border-border/40">
+            <button class="btn btn-primary btn-xs" title="Mark as Paid & Record Expense" onclick="window.recurringManager.payBill('${b.id}')">
+              <i data-lucide="check-circle" class="w-3.5 h-3.5 mr-1"></i> Pay & Log
+            </button>
+            <div class="flex items-center gap-1">
               <button class="icon-btn-sm" title="Edit" onclick="window.app.openRecurringModal('${b.id}')">
                 <i data-lucide="edit-2" class="w-4 h-4"></i>
               </button>
@@ -3798,13 +4245,40 @@ class RecurringManager {
       audio.playDelete();
       window.app.showToast('Recurring bill removed', 'info');
       this.render();
+      window.app.refreshActiveViews();
     }
+  }
+
+  handleSubmit() {
+    const id = document.getElementById('recFormId')?.value;
+    const name = document.getElementById('recFormName')?.value.trim();
+    const amount = parseFloat(document.getElementById('recFormAmount')?.value);
+    const frequency = document.getElementById('recFormFrequency')?.value;
+    const categoryId = document.getElementById('recFormCategory')?.value;
+    const accountId = document.getElementById('recFormAccount')?.value;
+    const nextDueDate = document.getElementById('recFormNextDate')?.value;
+
+    if (!name || !amount || amount <= 0) {
+      window.app.showToast('Please enter subscription name and valid amount', 'danger');
+      return;
+    }
+
+    const recData = { name, amount, frequency, categoryId, accountId, nextDueDate, active: true };
+    if (id) {
+      store.updateRecurringBill(id, recData);
+      window.app.showToast('Recurring bill updated', 'success');
+    } else {
+      store.addRecurringBill(recData);
+      window.app.showToast('Recurring subscription added', 'success');
+    }
+    audio.playSuccess();
+    window.app.closeAllModals();
+    window.app.refreshActiveViews();
   }
 }
 
 const recurringManager = new RecurringManager();
 window.recurringManager = recurringManager;
-
 
 // ==================== SECTION: goals.js ====================
 /**
@@ -3832,56 +4306,24 @@ class GoalsManager {
   }
 
   renderGoalsPage() {
-    const grid = document.getElementById('goalsGrid');
+    const grid = document.getElementById('goalsGridContainer') || document.getElementById('goalsGrid');
     const disciplineEl = document.getElementById('financialDisciplineWidget');
-    if (!grid) return;
+    const totalSavedEl = document.getElementById('goalsTotalSaved');
+    const overallPctEl = document.getElementById('goalsOverallPercent');
+    const streakEl = document.getElementById('goalsStreakText');
 
     const state = store.getState();
     const goals = state.goals;
 
-    // Financial Discipline Streaks & Badges
-    if (disciplineEl) {
-      disciplineEl.innerHTML = `
-        <div class="p-6 rounded-2xl bg-gradient-to-r from-indigo-900/40 via-purple-900/30 to-background border border-indigo-500/30 mb-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          <div class="flex items-center gap-4">
-            <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-500 to-yellow-300 text-slate-950 flex items-center justify-center font-black text-2xl shadow-lg shadow-amber-500/20">
-              ðŸ”¥
-            </div>
-            <div>
-              <div class="flex items-center gap-2">
-                <h3 class="text-lg font-bold text-foreground">14-Day Financial Discipline Streak!</h3>
-                <span class="badge badge-amber text-xs font-bold">VIP Saver</span>
-              </div>
-              <p class="text-sm text-muted mt-0.5">You have consistently logged transactions and stayed within 85% of budget limits.</p>
-            </div>
-          </div>
+    const totalSaved = goals.reduce((acc, g) => acc + (g.currentAmount || 0), 0);
+    const totalTarget = goals.reduce((acc, g) => acc + (g.targetAmount || 0), 0);
+    const overallPct = totalTarget > 0 ? Math.min(100, Math.round((totalSaved / totalTarget) * 100)) : 0;
 
-          <div class="flex items-center gap-3 flex-wrap">
-            <div class="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-surface border border-border">
-              <span class="text-lg">ðŸ›¡ï¸</span>
-              <div>
-                <div class="text-xs font-bold text-foreground">Emergency Net</div>
-                <div class="text-[10px] text-emerald-400 font-semibold">78% Funded</div>
-              </div>
-            </div>
-            <div class="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-surface border border-border">
-              <span class="text-lg">ðŸŽ¯</span>
-              <div>
-                <div class="text-xs font-bold text-foreground">Goal Master</div>
-                <div class="text-[10px] text-indigo-400 font-semibold">3 Active Goals</div>
-              </div>
-            </div>
-            <div class="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-surface border border-border">
-              <span class="text-lg">âš¡</span>
-              <div>
-                <div class="text-xs font-bold text-foreground">Daily Reviewer</div>
-                <div class="text-[10px] text-amber-400 font-semibold">Top 5% Habit</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
-    }
+    if (totalSavedEl) totalSavedEl.textContent = store.formatCurrency(totalSaved);
+    if (overallPctEl) overallPctEl.textContent = `${overallPct}% Reached`;
+    if (streakEl) streakEl.textContent = '14 Days Active';
+
+    if (!grid) return;
 
     if (goals.length === 0) {
       grid.innerHTML = `
@@ -3917,7 +4359,7 @@ class GoalsManager {
                   <h4 class="font-bold text-foreground text-base mt-0.5">${g.name}</h4>
                 </div>
               </div>
-              ${isCompleted ? `<span class="badge badge-emerald text-xs font-bold">ðŸŽ‰ Achieved!</span>` : `<span class="badge badge-indigo text-xs font-bold">${pct}%</span>`}
+              ${isCompleted ? `<span class="badge badge-emerald text-xs font-bold">🎉 Achieved!</span>` : `<span class="badge badge-indigo text-xs font-bold">${pct}%</span>`}
             </div>
 
             <div class="my-4 space-y-2">
@@ -3967,6 +4409,7 @@ class GoalsManager {
       audio.playDelete();
       window.app.showToast('Goal deleted', 'info');
       this.render();
+      window.app.refreshActiveViews();
     }
   }
 
@@ -3976,7 +4419,7 @@ class GoalsManager {
       audio.playSuccess();
       if (goal.currentAmount >= goal.targetAmount) {
         this.fireConfetti();
-        window.app.showToast(`ðŸ† Congratulations! You've achieved your goal: ${goal.name}!`, 'success');
+        window.app.showToast(`🏆 Congratulations! You've achieved your goal: ${goal.name}!`, 'success');
       } else {
         window.app.showToast(`Added ${store.formatCurrency(amount)} to ${goal.name}`, 'success');
       }
@@ -3984,11 +4427,52 @@ class GoalsManager {
       window.app.refreshActiveViews();
     }
   }
+
+  handleSubmit() {
+    const id = document.getElementById('goalFormId')?.value;
+    const name = document.getElementById('goalFormName')?.value.trim();
+    const targetAmount = parseFloat(document.getElementById('goalFormTarget')?.value);
+    const currentAmount = parseFloat(document.getElementById('goalFormCurrent')?.value) || 0;
+    const targetDate = document.getElementById('goalFormDate')?.value;
+    const category = document.getElementById('goalFormCategory')?.value.trim();
+    const notes = document.getElementById('goalFormNotes')?.value.trim();
+
+    if (!name || !targetAmount || targetAmount <= 0) {
+      window.app.showToast('Please enter a goal title and target amount', 'danger');
+      return;
+    }
+
+    const goalData = { name, targetAmount, currentAmount, targetDate, category, notes };
+    if (id) {
+      store.updateGoal(id, goalData);
+      window.app.showToast('Savings goal updated', 'success');
+    } else {
+      store.addGoal(goalData);
+      window.app.showToast('Savings goal created', 'success');
+    }
+    audio.playSuccess();
+    window.app.closeAllModals();
+    window.app.refreshActiveViews();
+  }
+
+  handleContributeSubmit() {
+    const goalId = document.getElementById('contribGoalId')?.value;
+    const amount = parseFloat(document.getElementById('contribAmount')?.value);
+    const fromAccId = document.getElementById('contribFromAccount')?.value;
+
+    if (!amount || amount <= 0) {
+      window.app.showToast('Please enter a valid contribution amount', 'danger');
+      return;
+    }
+
+    this.contribute(goalId, amount, fromAccId || null);
+    window.app.closeAllModals();
+    window.app.refreshActiveViews();
+  }
 }
 
 const goalsManager = new GoalsManager();
 window.goalsManager = goalsManager;
-
 
 // ==================== SECTION: receiptScanner.js ====================
 /**
@@ -4090,7 +4574,7 @@ class ReceiptScanner {
       scanResult.innerHTML = `
         <div class="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 space-y-3">
           <div class="flex items-center justify-between">
-            <span class="badge badge-emerald text-xs font-bold">âœ“ OCR Extracted Successfully</span>
+            <span class="badge badge-emerald text-xs font-bold">✓ OCR Extracted Successfully</span>
             <span class="text-xs text-muted font-mono">${file.name}</span>
           </div>
 
@@ -4152,7 +4636,6 @@ class ReceiptScanner {
 
 const receiptScanner = new ReceiptScanner();
 window.receiptScanner = receiptScanner;
-
 
 // ==================== SECTION: export.js ====================
 /**
@@ -4327,7 +4810,7 @@ class ExportManager {
         </table>
 
         <div class="footer">
-          Confidential financial report generated by VaultExpense Expense Tracker â€¢ All records encrypted locally.
+          Confidential financial report generated by VaultExpense Expense Tracker • All records encrypted locally.
         </div>
       </body>
       </html>
@@ -4338,11 +4821,22 @@ class ExportManager {
       printWindow.print();
     }, 500);
   }
+
+  exportTransactionsCSV() {
+    this.exportCSV();
+  }
+
+  exportFullJSON() {
+    this.exportJSON();
+  }
+
+  printFinancialReport() {
+    this.printReport();
+  }
 }
 
 const exportManager = new ExportManager();
 window.exportManager = exportManager;
-
 
 // ==================== SECTION: app.js ====================
 /**
@@ -4383,6 +4877,7 @@ class App {
       this.updateSidebarVisibility();
       if (['login_success', 'signup_success'].includes(event)) {
         this.closeAllModals();
+        this.hideAuthScreen();
         this.showToast(`Welcome back, ${user.name}!`, 'success');
         if (user.role === 'admin') {
           this.navigate('admin-dashboard');
@@ -4391,7 +4886,7 @@ class App {
         }
       } else if (event === 'logout_success') {
         this.showToast('You have been signed out.', 'info');
-        this.navigate('dashboard');
+        this.showAuthScreen();
       }
     });
 
@@ -4402,9 +4897,14 @@ class App {
     this.refreshActiveViews();
     this.refreshKPIs();
 
-    // If starting on admin user, redirect to admin-dashboard
-    if (auth.isAdmin()) {
-      this.navigate('admin-dashboard');
+    // Check auth status on load
+    if (!auth.isAuthenticated()) {
+      this.showAuthScreen();
+    } else {
+      this.hideAuthScreen();
+      if (auth.isAdmin()) {
+        this.navigate('admin-dashboard');
+      }
     }
 
     if (window.lucide) window.lucide.createIcons();
@@ -4436,7 +4936,7 @@ class App {
       if (dropNameEl) dropNameEl.textContent = user.name;
       if (dropEmailEl) dropEmailEl.textContent = user.email;
       if (dropBadgeEl) {
-        dropBadgeEl.textContent = user.role === 'admin' ? 'ðŸ›¡ï¸ Admin Account' : 'ðŸ‘¤ User Account';
+        dropBadgeEl.textContent = user.role === 'admin' ? '🛡️ Admin Account' : '👤 User Account';
         dropBadgeEl.className = `badge ${user.role === 'admin' ? 'badge-primary' : 'badge-secondary'} text-[10px] font-bold uppercase`;
       }
       if (sidebarRoleBadge) {
@@ -4669,6 +5169,98 @@ class App {
     }
   }
 
+  // --- AUTH SCREEN DISPLAY ---
+  showAuthScreen() {
+    const authScreen = document.getElementById('authScreen');
+    const appContainer = document.querySelector('.app-container');
+    if (authScreen) authScreen.classList.remove('hidden');
+    if (appContainer) appContainer.classList.add('hidden');
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  hideAuthScreen() {
+    const authScreen = document.getElementById('authScreen');
+    const appContainer = document.querySelector('.app-container');
+    if (authScreen) authScreen.classList.add('hidden');
+    if (appContainer) appContainer.classList.remove('hidden');
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  switchMainAuthTab(tab) {
+    const loginTabBtn = document.getElementById('mainTabLogin');
+    const signupTabBtn = document.getElementById('mainTabSignup');
+    const loginForm = document.getElementById('mainLoginForm');
+    const signupForm = document.getElementById('mainSignupForm');
+    const googleBtnText = document.getElementById('googleBtnText');
+
+    if (tab === 'login') {
+      loginTabBtn?.classList.add('active');
+      signupTabBtn?.classList.remove('active');
+      loginForm?.classList.remove('hidden');
+      signupForm?.classList.add('hidden');
+      if (googleBtnText) googleBtnText.textContent = 'Continue with Google';
+    } else {
+      loginTabBtn?.classList.remove('active');
+      signupTabBtn?.classList.add('active');
+      loginForm?.classList.add('hidden');
+      signupForm?.classList.remove('hidden');
+      if (googleBtnText) googleBtnText.textContent = 'Sign up with Google';
+    }
+    audio.playClick();
+  }
+
+  togglePasswordVisibility(inputId) {
+    const input = document.getElementById(inputId);
+    const eyeIcon = document.getElementById(`${inputId}Eye`);
+    if (!input) return;
+
+    if (input.type === 'password') {
+      input.type = 'text';
+      if (eyeIcon) eyeIcon.setAttribute('data-lucide', 'eye-off');
+    } else {
+      input.type = 'password';
+      if (eyeIcon) eyeIcon.setAttribute('data-lucide', 'eye');
+    }
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  openGoogleAuthModal() {
+    const modal = document.getElementById('googleAuthModal');
+    if (modal) {
+      modal.classList.add('active');
+      audio.playClick();
+      if (window.lucide) window.lucide.createIcons();
+    }
+  }
+
+  loginWithGoogleAccount(name, email, role) {
+    try {
+      auth.loginWithGoogle({ name, email, role, currency: 'INR' });
+      this.closeAllModals();
+      audio.playSuccess();
+    } catch (err) {
+      audio.playError?.();
+      this.showToast(err.message, 'danger');
+    }
+  }
+
+  loginWithGoogleCustom(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    const name = document.getElementById('googleCustomName')?.value || 'Google User';
+    const email = document.getElementById('googleCustomEmail')?.value || '';
+    const role = document.getElementById('googleCustomRole')?.value || 'user';
+    const currency = document.getElementById('googleCustomCurrency')?.value || 'INR';
+
+    try {
+      auth.loginWithGoogle({ name, email, role, currency });
+      this.closeAllModals();
+      audio.playSuccess();
+    } catch (err) {
+      audio.playError?.();
+      this.showToast(err.message, 'danger');
+    }
+  }
+
   // --- AUTH CONTROLS & DROPDOWN ---
   setupAuthControls() {
     const profileBtn = document.getElementById('userProfileBtn');
@@ -4688,7 +5280,46 @@ class App {
       });
     }
 
-    // Login Form Submit
+    // Main Landing Login Form Submit
+    const mainLoginForm = document.getElementById('mainLoginForm');
+    if (mainLoginForm) {
+      mainLoginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = document.getElementById('mainLoginEmail').value;
+        const password = document.getElementById('mainLoginPassword').value;
+
+        try {
+          auth.login({ email, password });
+          audio.playSuccess();
+        } catch (err) {
+          audio.playError?.();
+          this.showToast(err.message, 'danger');
+        }
+      });
+    }
+
+    // Main Landing Signup Form Submit
+    const mainSignupForm = document.getElementById('mainSignupForm');
+    if (mainSignupForm) {
+      mainSignupForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = document.getElementById('mainSignupName').value;
+        const email = document.getElementById('mainSignupEmail').value;
+        const password = document.getElementById('mainSignupPassword').value;
+        const role = document.getElementById('mainSignupRole').value;
+        const currency = document.getElementById('mainSignupCurrency').value;
+
+        try {
+          auth.signup({ name, email, password, role, currency });
+          audio.playSuccess();
+        } catch (err) {
+          audio.playError?.();
+          this.showToast(err.message, 'danger');
+        }
+      });
+    }
+
+    // Modal Login Form Submit
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
       loginForm.addEventListener('submit', (e) => {
@@ -4706,7 +5337,7 @@ class App {
       });
     }
 
-    // Signup Form Submit
+    // Modal Signup Form Submit
     const signupForm = document.getElementById('signupForm');
     if (signupForm) {
       signupForm.addEventListener('submit', (e) => {
@@ -4764,13 +5395,40 @@ class App {
   }
 
   fillQuickAuth(email, password) {
+    const mainEmailInput = document.getElementById('mainLoginEmail');
+    const mainPassInput = document.getElementById('mainLoginPassword');
+    if (mainEmailInput && mainPassInput) {
+      mainEmailInput.value = email;
+      mainPassInput.value = password;
+    }
+
     const emailInput = document.getElementById('loginEmail');
     const passInput = document.getElementById('loginPassword');
     if (emailInput && passInput) {
       emailInput.value = email;
       passInput.value = password;
-      audio.playClick();
     }
+    audio.playClick();
+  }
+
+  quickLoginAs(email, password) {
+    this.fillQuickAuth(email, password);
+    try {
+      auth.login({ email, password });
+      audio.playSuccess();
+    } catch (err) {
+      audio.playError?.();
+      this.showToast(err.message, 'danger');
+    }
+  }
+
+  toggleTheme() {
+    const current = store.getState().preferences.theme || 'dark';
+    const next = current === 'dark' ? 'light' : 'dark';
+    this.applyTheme(next);
+    store.setPreference('theme', next);
+    audio.playClick();
+    chartManager.initOrUpdateAll();
   }
 
   handleLogout() {
@@ -5083,7 +5741,7 @@ class App {
 
     store.addTransaction({
       description: `Transfer to ${toAccObj.name}`,
-      merchant: `Transfer: ${fromAccObj.name} â†’ ${toAccObj.name}`,
+      merchant: `Transfer: ${fromAccObj.name} → ${toAccObj.name}`,
       amount,
       type: 'transfer',
       categoryId: 'cat_transfer',
@@ -5215,6 +5873,35 @@ class App {
     }
   }
 
+  openContributeModal(goalId = null) {
+    const modal = document.getElementById('contributeModal');
+    const form = document.getElementById('contributeForm');
+    if (!modal || !form) return;
+    form.reset();
+    this.populateSelects();
+
+    const targetId = typeof goalId === 'object' && goalId !== null ? goalId.id : goalId;
+    if (targetId) {
+      const g = store.getState().goals.find(goal => goal.id === targetId);
+      if (g) {
+        document.getElementById('contribGoalId').value = g.id;
+        const titleEl = document.getElementById('contribGoalNameTitle');
+        if (titleEl) titleEl.textContent = `${g.name} (${store.formatCurrency(g.currentAmount)} / ${store.formatCurrency(g.targetAmount)})`;
+      }
+    }
+
+    modal.classList.add('active');
+    audio.playClick();
+  }
+
+  openAdminCategoryModal(catId = null) {
+    if (catId) {
+      adminManager.openEditCategoryModal(catId);
+    } else {
+      adminManager.openAddCategoryModal();
+    }
+  }
+
   closeAllModals() {
     document.querySelectorAll('.modal-backdrop').forEach(m => m.classList.remove('active'));
     this.closeUserDropdown();
@@ -5343,6 +6030,15 @@ class App {
   // --- THEME & TOAST ENGINE ---
   applyTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
+    const themeBtn = document.getElementById('themeToggleBtn');
+    if (themeBtn) {
+      themeBtn.innerHTML = theme === 'dark' ? '<i data-lucide="sun" class="w-4 h-4"></i>' : '<i data-lucide="moon" class="w-4 h-4"></i>';
+    }
+    const authThemeBtn = document.getElementById('authThemeToggleBtn');
+    if (authThemeBtn) {
+      authThemeBtn.innerHTML = theme === 'dark' ? '<i data-lucide="sun" class="w-4 h-4"></i>' : '<i data-lucide="moon" class="w-4 h-4"></i>';
+    }
+    if (window.lucide) window.lucide.createIcons();
   }
 
   showToast(message, type = 'info', duration = 3500) {
@@ -5391,7 +6087,6 @@ class App {
 const app = new App();
 window.app = app;
 
-
 // Global Window Aliases for Event Handlers & Onclick Bindings
 window.audio = audio;
 window.auth = auth;
@@ -5410,7 +6105,7 @@ window.app = app;
 
 // Auto-initialize Lucide Icons on load
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', function() {
         if (window.lucide) window.lucide.createIcons();
     });
 } else {
